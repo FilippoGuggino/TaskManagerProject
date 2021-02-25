@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="VcsDirectoryMappings">
+    <mapping directory="$PROJECT_DIR$/../.." vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/.." vcs="Git" />
+    <mapping directory="$PROJECT_DIR$" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/DistributedSystemDocker/alpine-mysql1" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/DistributedSystemDocker/alpine-mysql1/mariadb-connector-odbc" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/DistributedSystemDocker/alpine-mysql1/mariadb-connector-odbc/libmariadb" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/DistributedSystemDocker/alpine-mysql2" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/TaskManagerDocker/alpine-mysql1" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/TaskManagerDocker/alpine-mysql1/mariadb-connector-odbc" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/TaskManagerDocker/alpine-mysql1/mariadb-connector-odbc/libmariadb" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/TaskManagerDocker/alpine-mysql2" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/TaskManagerErlangServer" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/TaskOrganizerWebService" vcs="Git" />
+  </component>
+</project>

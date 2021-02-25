@@ -1,0 +1,17 @@
+mysql
+.env
+build/
+CMakeFiles/
+libmariadb/
+mariadb-connector-odbc/
+mysql/
+test/
+cmake_install.cmake
+CPackConfig.cmake
+CPackSourceConfig.cmake
+docker-compose.yml
+erl_crash.dump
+install_manifest.txt
+libmaodbc.so
+LICENSE
+rebar.lock

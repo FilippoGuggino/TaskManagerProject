@@ -1,0 +1,145 @@
+2021-02-16 22:48:45 =CRASH REPORT====
+  crasher:
+    initial call: rabbit_writer:enter_mainloop/2
+    pid: <0.187.0>
+    registered_name: []
+    exception error: bad argument: [{rabbit_framing_amqp_0_9_1,encode_method_fields,1,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_framing_amqp_0_9_1.erl"},{line,1083}]},{rabbit_binary_generator,build_simple_method_frame,3,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_binary_generator.erl"},{line,50}]},{rabbit_writer,internal_send_command_async,2,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,353}]},{rabbit_writer,handle_message,3,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,229}]},{rabbit_writer,mainloop1,2,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,213}]},{rabbit_writer,mainloop,2,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,204}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,226}]}]
+    ancestors: [<0.184.0>,<0.178.0>,<0.174.0>,<0.173.0>,amqp_sup,<0.171.0>]
+    message_queue_len: 0
+    messages: []
+    links: [<0.184.0>]
+    dictionary: [{process_name,{rabbit_writer,{<<"client 172.18.0.1:54659 -> 172.18.0.160:5672">>,1}}}]
+    trap_exit: false
+    status: running
+    heap_size: 2586
+    stack_size: 28
+    reductions: 816
+  neighbours:
+2021-02-16 22:48:45 =SUPERVISOR REPORT====
+     Supervisor: {<0.184.0>,amqp_channel_sup}
+     Context:    child_terminated
+     Reason:     {badarg,[{rabbit_framing_amqp_0_9_1,encode_method_fields,1,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_framing_amqp_0_9_1.erl"},{line,1083}]},{rabbit_binary_generator,build_simple_method_frame,3,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_binary_generator.erl"},{line,50}]},{rabbit_writer,internal_send_command_async,2,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,353}]},{rabbit_writer,handle_message,3,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,229}]},{rabbit_writer,mainloop1,2,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,213}]},{rabbit_writer,mainloop,2,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,204}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,226}]}]}
+     Offender:   [{pid,<0.187.0>},{name,writer},{mfargs,{rabbit_writer,start_link,[#Port<0.8>,1,131072,rabbit_framing_amqp_0_9_1,<0.186.0>,{<<"client 172.18.0.1:54659 -> 172.18.0.160:5672">>,1},false,1000000000]}},{restart_type,transient},{shutdown,30000},{child_type,worker}]
+
+2021-02-16 22:48:45 =SUPERVISOR REPORT====
+     Supervisor: {<0.184.0>,amqp_channel_sup}
+     Context:    shutdown
+     Reason:     reached_max_restart_intensity
+     Offender:   [{pid,<0.187.0>},{name,writer},{mfargs,{rabbit_writer,start_link,[#Port<0.8>,1,131072,rabbit_framing_amqp_0_9_1,<0.186.0>,{<<"client 172.18.0.1:54659 -> 172.18.0.160:5672">>,1},false,1000000000]}},{restart_type,transient},{shutdown,30000},{child_type,worker}]
+
+2021-02-16 22:52:35 =CRASH REPORT====
+  crasher:
+    initial call: rabbit_writer:enter_mainloop/2
+    pid: <0.187.0>
+    registered_name: []
+    exception error: bad argument: [{rabbit_framing_amqp_0_9_1,encode_method_fields,1,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_framing_amqp_0_9_1.erl"},{line,1083}]},{rabbit_binary_generator,build_simple_method_frame,3,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_binary_generator.erl"},{line,50}]},{rabbit_writer,internal_send_command_async,2,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,353}]},{rabbit_writer,handle_message,3,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,229}]},{rabbit_writer,mainloop1,2,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,213}]},{rabbit_writer,mainloop,2,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,204}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,226}]}]
+    ancestors: [<0.184.0>,<0.178.0>,<0.174.0>,<0.173.0>,amqp_sup,<0.171.0>]
+    message_queue_len: 0
+    messages: []
+    links: [<0.184.0>]
+    dictionary: [{process_name,{rabbit_writer,{<<"client 172.18.0.1:34519 -> 172.18.0.160:5672">>,1}}}]
+    trap_exit: false
+    status: running
+    heap_size: 2586
+    stack_size: 28
+    reductions: 929
+  neighbours:
+2021-02-16 22:52:35 =SUPERVISOR REPORT====
+     Supervisor: {<0.184.0>,amqp_channel_sup}
+     Context:    child_terminated
+     Reason:     {badarg,[{rabbit_framing_amqp_0_9_1,encode_method_fields,1,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_framing_amqp_0_9_1.erl"},{line,1083}]},{rabbit_binary_generator,build_simple_method_frame,3,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_binary_generator.erl"},{line,50}]},{rabbit_writer,internal_send_command_async,2,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,353}]},{rabbit_writer,handle_message,3,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,229}]},{rabbit_writer,mainloop1,2,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,213}]},{rabbit_writer,mainloop,2,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,204}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,226}]}]}
+     Offender:   [{pid,<0.187.0>},{name,writer},{mfargs,{rabbit_writer,start_link,[#Port<0.7>,1,131072,rabbit_framing_amqp_0_9_1,<0.186.0>,{<<"client 172.18.0.1:34519 -> 172.18.0.160:5672">>,1},false,1000000000]}},{restart_type,transient},{shutdown,30000},{child_type,worker}]
+
+2021-02-16 22:52:35 =SUPERVISOR REPORT====
+     Supervisor: {<0.184.0>,amqp_channel_sup}
+     Context:    shutdown
+     Reason:     reached_max_restart_intensity
+     Offender:   [{pid,<0.187.0>},{name,writer},{mfargs,{rabbit_writer,start_link,[#Port<0.7>,1,131072,rabbit_framing_amqp_0_9_1,<0.186.0>,{<<"client 172.18.0.1:34519 -> 172.18.0.160:5672">>,1},false,1000000000]}},{restart_type,transient},{shutdown,30000},{child_type,worker}]
+
+2021-02-16 22:57:55 =CRASH REPORT====
+  crasher:
+    initial call: rabbit_writer:enter_mainloop/2
+    pid: <0.187.0>
+    registered_name: []
+    exception error: bad argument: [{rabbit_framing_amqp_0_9_1,encode_method_fields,1,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_framing_amqp_0_9_1.erl"},{line,1083}]},{rabbit_binary_generator,build_simple_method_frame,3,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_binary_generator.erl"},{line,50}]},{rabbit_writer,internal_send_command_async,2,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,353}]},{rabbit_writer,handle_message,3,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,229}]},{rabbit_writer,mainloop1,2,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,213}]},{rabbit_writer,mainloop,2,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,204}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,226}]}]
+    ancestors: [<0.184.0>,<0.178.0>,<0.174.0>,<0.173.0>,amqp_sup,<0.171.0>]
+    message_queue_len: 0
+    messages: []
+    links: [<0.184.0>]
+    dictionary: [{process_name,{rabbit_writer,{<<"client 172.18.0.1:51503 -> 172.18.0.160:5672">>,1}}}]
+    trap_exit: false
+    status: running
+    heap_size: 2586
+    stack_size: 28
+    reductions: 929
+  neighbours:
+2021-02-16 22:57:55 =SUPERVISOR REPORT====
+     Supervisor: {<0.184.0>,amqp_channel_sup}
+     Context:    child_terminated
+     Reason:     {badarg,[{rabbit_framing_amqp_0_9_1,encode_method_fields,1,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_framing_amqp_0_9_1.erl"},{line,1083}]},{rabbit_binary_generator,build_simple_method_frame,3,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_binary_generator.erl"},{line,50}]},{rabbit_writer,internal_send_command_async,2,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,353}]},{rabbit_writer,handle_message,3,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,229}]},{rabbit_writer,mainloop1,2,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,213}]},{rabbit_writer,mainloop,2,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,204}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,226}]}]}
+     Offender:   [{pid,<0.187.0>},{name,writer},{mfargs,{rabbit_writer,start_link,[#Port<0.7>,1,131072,rabbit_framing_amqp_0_9_1,<0.186.0>,{<<"client 172.18.0.1:51503 -> 172.18.0.160:5672">>,1},false,1000000000]}},{restart_type,transient},{shutdown,30000},{child_type,worker}]
+
+2021-02-16 22:57:55 =SUPERVISOR REPORT====
+     Supervisor: {<0.184.0>,amqp_channel_sup}
+     Context:    shutdown
+     Reason:     reached_max_restart_intensity
+     Offender:   [{pid,<0.187.0>},{name,writer},{mfargs,{rabbit_writer,start_link,[#Port<0.7>,1,131072,rabbit_framing_amqp_0_9_1,<0.186.0>,{<<"client 172.18.0.1:51503 -> 172.18.0.160:5672">>,1},false,1000000000]}},{restart_type,transient},{shutdown,30000},{child_type,worker}]
+
+2021-02-16 23:03:14 =CRASH REPORT====
+  crasher:
+    initial call: rabbit_writer:enter_mainloop/2
+    pid: <0.188.0>
+    registered_name: []
+    exception error: bad argument: [{rabbit_framing_amqp_0_9_1,encode_method_fields,1,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_framing_amqp_0_9_1.erl"},{line,1083}]},{rabbit_binary_generator,build_simple_method_frame,3,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_binary_generator.erl"},{line,50}]},{rabbit_writer,internal_send_command_async,2,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,353}]},{rabbit_writer,handle_message,3,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,229}]},{rabbit_writer,mainloop1,2,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,213}]},{rabbit_writer,mainloop,2,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,204}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,226}]}]
+    ancestors: [<0.185.0>,<0.179.0>,<0.175.0>,<0.174.0>,amqp_sup,<0.172.0>]
+    message_queue_len: 0
+    messages: []
+    links: [<0.185.0>]
+    dictionary: [{process_name,{rabbit_writer,{<<"client 172.18.0.1:41799 -> 172.18.0.160:5672">>,1}}}]
+    trap_exit: false
+    status: running
+    heap_size: 2586
+    stack_size: 28
+    reductions: 929
+  neighbours:
+2021-02-16 23:03:14 =SUPERVISOR REPORT====
+     Supervisor: {<0.185.0>,amqp_channel_sup}
+     Context:    child_terminated
+     Reason:     {badarg,[{rabbit_framing_amqp_0_9_1,encode_method_fields,1,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_framing_amqp_0_9_1.erl"},{line,1083}]},{rabbit_binary_generator,build_simple_method_frame,3,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_binary_generator.erl"},{line,50}]},{rabbit_writer,internal_send_command_async,2,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,353}]},{rabbit_writer,handle_message,3,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,229}]},{rabbit_writer,mainloop1,2,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,213}]},{rabbit_writer,mainloop,2,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,204}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,226}]}]}
+     Offender:   [{pid,<0.188.0>},{name,writer},{mfargs,{rabbit_writer,start_link,[#Port<0.7>,1,131072,rabbit_framing_amqp_0_9_1,<0.187.0>,{<<"client 172.18.0.1:41799 -> 172.18.0.160:5672">>,1},false,1000000000]}},{restart_type,transient},{shutdown,30000},{child_type,worker}]
+
+2021-02-16 23:03:14 =SUPERVISOR REPORT====
+     Supervisor: {<0.185.0>,amqp_channel_sup}
+     Context:    shutdown
+     Reason:     reached_max_restart_intensity
+     Offender:   [{pid,<0.188.0>},{name,writer},{mfargs,{rabbit_writer,start_link,[#Port<0.7>,1,131072,rabbit_framing_amqp_0_9_1,<0.187.0>,{<<"client 172.18.0.1:41799 -> 172.18.0.160:5672">>,1},false,1000000000]}},{restart_type,transient},{shutdown,30000},{child_type,worker}]
+
+2021-02-16 23:05:39 =CRASH REPORT====
+  crasher:
+    initial call: rabbit_writer:enter_mainloop/2
+    pid: <0.187.0>
+    registered_name: []
+    exception error: bad argument: [{rabbit_framing_amqp_0_9_1,encode_method_fields,1,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_framing_amqp_0_9_1.erl"},{line,1083}]},{rabbit_binary_generator,build_simple_method_frame,3,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_binary_generator.erl"},{line,50}]},{rabbit_writer,internal_send_command_async,2,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,353}]},{rabbit_writer,handle_message,3,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,229}]},{rabbit_writer,mainloop1,2,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,213}]},{rabbit_writer,mainloop,2,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,204}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,226}]}]
+    ancestors: [<0.184.0>,<0.178.0>,<0.174.0>,<0.173.0>,amqp_sup,<0.171.0>]
+    message_queue_len: 0
+    messages: []
+    links: [<0.184.0>]
+    dictionary: [{process_name,{rabbit_writer,{<<"client 172.18.0.1:45435 -> 172.18.0.160:5672">>,1}}}]
+    trap_exit: false
+    status: running
+    heap_size: 2586
+    stack_size: 28
+    reductions: 930
+  neighbours:
+2021-02-16 23:05:39 =SUPERVISOR REPORT====
+     Supervisor: {<0.184.0>,amqp_channel_sup}
+     Context:    child_terminated
+     Reason:     {badarg,[{rabbit_framing_amqp_0_9_1,encode_method_fields,1,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_framing_amqp_0_9_1.erl"},{line,1083}]},{rabbit_binary_generator,build_simple_method_frame,3,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_binary_generator.erl"},{line,50}]},{rabbit_writer,internal_send_command_async,2,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,353}]},{rabbit_writer,handle_message,3,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,229}]},{rabbit_writer,mainloop1,2,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,213}]},{rabbit_writer,mainloop,2,[{file,"/run/media/filippo/dati/workspace/DistributedSystemDocker/TaskOrganizerServerErl/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,204}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,226}]}]}
+     Offender:   [{pid,<0.187.0>},{name,writer},{mfargs,{rabbit_writer,start_link,[#Port<0.7>,1,131072,rabbit_framing_amqp_0_9_1,<0.186.0>,{<<"client 172.18.0.1:45435 -> 172.18.0.160:5672">>,1},false,1000000000]}},{restart_type,transient},{shutdown,30000},{child_type,worker}]
+
+2021-02-16 23:05:39 =SUPERVISOR REPORT====
+     Supervisor: {<0.184.0>,amqp_channel_sup}
+     Context:    shutdown
+     Reason:     reached_max_restart_intensity
+     Offender:   [{pid,<0.187.0>},{name,writer},{mfargs,{rabbit_writer,start_link,[#Port<0.7>,1,131072,rabbit_framing_amqp_0_9_1,<0.186.0>,{<<"client 172.18.0.1:45435 -> 172.18.0.160:5672">>,1},false,1000000000]}},{restart_type,transient},{shutdown,30000},{child_type,worker}]
+

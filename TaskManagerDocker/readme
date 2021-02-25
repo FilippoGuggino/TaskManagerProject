@@ -1,0 +1,17 @@
+
+# create new network for Erlang Nodes
+docker network create --subnet=172.18.0.0/16 DistributedSystems 
+
+docker build -t docker build -t wangxian/alpine-mysql1 .    
+
+# run the container and set all environment variables
+docker run -it --name mysql --net DistributedSystems --ip 172.18.0.163 -v $(pwd):/app -e MYSQL_DATABASE=TaskOrganizer -e MYSQL_USER=distributed -e MYSQL_PASSWORD=password -e MYSQL_ROOT_PASSWORD=password wangxian/alpine-mysql1
+
+# run rabbitmq container
+docker run -d --hostname rabbitmq --name rabbitmq --net DistributedSystems --ip 172.18.1.2 -p 5672:5672 -e RABBITMQ_ERLANG_COOKIE=test rabbitmq
+
+# compile listener_reponder with correct path
+erlc -I _build/default/lib/ testrebar_app.erl   
+
+# execute erl shell with correct path
+erl -pa _build/default/lib/*/ebin -setcookie test

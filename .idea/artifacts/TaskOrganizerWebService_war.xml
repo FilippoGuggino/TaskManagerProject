@@ -1,0 +1,14 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="TaskOrganizerWebService:war">
+    <output-path>$PROJECT_DIR$/TaskOrganizerWebService/target</output-path>
+    <properties id="maven-jee-properties">
+      <options>
+        <module>TaskOrganizerWebService</module>
+        <packaging>war</packaging>
+      </options>
+    </properties>
+    <root id="archive" name="TaskOrganizerWebService-1.0-SNAPSHOT.war">
+      <element id="artifact" artifact-name="TaskOrganizerWebService:war exploded" />
+    </root>
+  </artifact>
+</component>

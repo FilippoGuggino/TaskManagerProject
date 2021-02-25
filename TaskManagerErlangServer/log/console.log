@@ -1,0 +1,3 @@
+2021-02-18 12:16:26.435 [warning] <0.9.0> AMQP 0-9-1 client call timeout was 60000 ms, is updated to a safe effective value of 70000 ms
+2021-02-18 12:16:29.515 [error] emulator Error in process <0.9.0> on node distributed@localhost with exit value:
+{{badmatch,{error,ehostunreach}},[{listener_responder,start,0,[{file,"listener_responder.erl"},{line,42}]},{erl_eval,do_apply,6,[{file,"erl_eval.erl"},{line,680}]},{init,start_it,1,[]},{init,start_em,1,[]},{init,do_boot,3,[]}]}
