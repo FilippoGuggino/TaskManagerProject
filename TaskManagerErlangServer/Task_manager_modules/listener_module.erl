@@ -3,7 +3,7 @@
 -import(lists, [delete/2]).
 -import(query_module, [check_host_recovery_regisered/1, insert_host_recovery/2, create_board_db/1, create_task_db/1, load_boards_db/0, load_tasks_db/1, update_task_db/1]).
 -import(election_module, [election_handler/1]).
--import(recover_node_module, [host_register_recovery/2, recovery_routine/1]).
+-import(recover_node_module, [host_register_recovery/2, recovery_routine/2]).
 -import(utility_module, [isolate_element/2, delete_hosts_from_list/2, get_timestamp_a/0]).
 -import(message_sending_module, [server_up_message/2, send_and_wait/4, send_ack_to_primary/3]).
 %% API
@@ -60,10 +60,10 @@ listener_loop([List_of_hosts], Server_type, Sent_heartbeat, Election_ready) ->
                Updated_list_of_hosts = List_of_hosts ++ [From],
 
                %Recovery Host routine - send it all the data
-               %recovery_routine(From),
+               recovery_routine(From, List_of_hosts),
                %Send to all the other servers active the new host that joined
-               server_up_message([Updated_list_of_hosts], List_of_hosts),
-               From ! {ack_new_server_up, Updated_list_of_hosts, self()},
+               server_up_message(Updated_list_of_hosts, List_of_hosts),
+               % From ! {ack_new_server_up, Updated_list_of_hosts, self()},
                New_election_ready = Election_ready;
      % update_new_server_state(From);
      % TODO update new server database state
@@ -177,16 +177,29 @@ db_manager_loop(From, Operation, Param, Primary_info, [List_of_hosts], Listener_
      %GET CURRENT TIMESTAMP TO PASS ALL THE OTHER HOSTS
      case Operation of
           create_board ->
+               io:format("ho chiamato create_board~n"),
                create_board_db(Params);
 
           %MULTIPLE BOARDS UPDATE
           create_boards ->
+               io:format("ho chiamato create_boards~n"),
                odbc:param_query(Ref_to_db, "INSERT INTO boards (board_title, last_update_time) VALUES (?,?)",
                     [{{sql_varchar, 255},
                          isolate_element(Params, 1)},
                          {{sql_varchar, 255},
                               isolate_element(Params, 2)}
                     ]),
+               %CREATE ASSOCIATE STAGES
+               List_of_stages = ["BACKLOG", "DOING", "QUALITY CHECK","DONE"],
+               odbc:param_query(Ref_to_db, "INSERT INTO stages (stage_title, board_title, last_update_time) VALUES (?, ?, ?)",
+                    [{{sql_varchar, 255},
+                         List_of_stages},
+                         {{sql_varchar, 255},
+                              ["A" ||  X <- List_of_stages]},
+                         {{sql_varchar, 255},
+                              ["0" ||  X <- List_of_stages]}
+                    ]),
+               io:format("create_board query ok~n"),
                io:format("SYNC: create_boards query ok~n");
 
 
@@ -235,8 +248,7 @@ db_manager_loop(From, Operation, Param, Primary_info, [List_of_hosts], Listener_
      end,
      case Primary_info of
           primary ->
-               io:format("I am the PRIMARY~n"),
-               send_and_wait(Operation, Params, [List_of_hosts], List_of_hosts);
+               send_and_wait(Operation, Params, List_of_hosts, List_of_hosts);
           %Finally send data to client ACK or informations asked
 %%               send_update_to_clients(Params),
 %%               % Reply web-server with ack
@@ -252,7 +264,7 @@ db_manager_loop(From, Operation, Param, Primary_info, [List_of_hosts], Listener_
 %%% IF not starts the host recovery routine
 receive_acks(_, []) ->
      %SEND REPONSE TO CLIENT WHO ASKED DATA
-     io:format("All hosts have responded~n");
+     io:format("All host have responded~n");
 receive_acks(Params, List_of_hosts) ->
      receive
           {ack, Params_received, Remote_ID} ->

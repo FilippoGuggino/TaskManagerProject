@@ -17,9 +17,10 @@ load_tasks() ->
 client_test(Title, PID_server) ->
   io:format("Client sending data!~n"),
   PID_server ! {create_board, {Title}, primary, self()},
-%io:format("------------------Send data to SERVERS~n"),
-%PID_server ! {create_stage, {"Stage1",Title}, primary, self()}.
-  PID_server ! {create_task,  {"New task: This task is nice","2021-10-10", 1}, primary, self()}.
+% io:format("------------------Send data to SERVERS~n"),
+% PID_server ! {create_stage, {"Stage1", Title}, primary, self()},
+
+  PID_server ! {create_task,  {"New task: This task is nice","2021-10-10", 43}, primary, self()}.
 %PID_server ! {update_task,  {2,1}, primary, self()}.
 
 start() ->

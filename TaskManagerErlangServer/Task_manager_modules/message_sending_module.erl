@@ -49,19 +49,20 @@ send_update_to_clients(Params) ->
   %amqp_connection:close(Connection).
 
 
-send_and_wait(_, Params, [List_of_hosts], []) ->
+send_and_wait(_, Params, List_of_hosts, []) ->
   io:format("All data have been sent - Wait for acks~n"),
   receive_acks(Params, List_of_hosts);
-send_and_wait(Operation, Params, [List_of_hosts], [H | T]) ->
+send_and_wait(Operation, Params, List_of_hosts, [H | T]) ->
   io:format("Send data to secondary~n"),
+  io:format("cosoidas: ~p~n", [{Operation, Params, secondary, self()}]),
   H ! {Operation, Params, secondary, self()},
-  send_and_wait(Operation, Params, [List_of_hosts], T).
+  send_and_wait(Operation, Params, List_of_hosts, T).
 
 % This should be called as a process to notify all the hosts
 % A new host is available in the network
 server_up_message(_, []) ->
   io:format("All hosts has been notified! ~n");
-server_up_message([Updated_list_of_hosts], [Host | T]) ->
+server_up_message(Updated_list_of_hosts, [Host | T]) ->
   io:format("~p: Sent update to ~p ~n", [self(), Host]),
   Host ! {update_list, Updated_list_of_hosts, secondary, self()},
-  server_up_message([Updated_list_of_hosts], T).
+  server_up_message(Updated_list_of_hosts, T).

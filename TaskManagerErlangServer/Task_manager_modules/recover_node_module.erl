@@ -3,7 +3,7 @@
 
 
 %% API
--export([host_register_recovery/2, recovery_routine/1, server_up_message/2]).
+-export([host_register_recovery/2, recovery_routine/2, server_up_message/2]).
 -import(query_module, [load_tasks_recovery/1,check_host_recovery_registered/1, insert_host_recovery/2, load_tasks_db/1, load_boards_db/0, load_boards_recovery/1, delete_host_from_recovery/1]).
 -import(message_sending_module,[send_and_wait/4]).
 %%%%%%%%%%%%%%%%%%%%%% HOST FAILURE ROUTINE: REGISTRATION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -45,14 +45,17 @@ server_up_message([Updated_list_of_hosts], [Host | T]) ->
   Host ! {update_list, Updated_list_of_hosts, secondary, self()},
   server_up_message([Updated_list_of_hosts], T).
 
-recovery_routine(Process_id) ->
+recovery_routine(Process_id, List_of_hosts) ->
+  io:format("PRIMARY: starting recovery routine for secondary~n"),
+  Process_id ! {ack_new_server_up, List_of_hosts, self()},
   Data = check_host_recovery_registered(Process_id),
-  if
-    Data == [] ->
-      Time = "0";
-    true ->
-      Time = Data
-  end,
+  %if
+  %  Data == [] ->
+  %    Time = "0";
+  %  true ->
+  %    Time = Data
+  %end,
+  Time = "0",
   %GET BOARD AND SEND BOARDS
   Boards = load_boards_recovery(Time),
   %SENDING ALL THE BOARDS
@@ -64,6 +67,7 @@ recovery_routine(Process_id) ->
   %send_and_wait(create_stages, Stages, [Process_id], [Process_id]),
 
   %GET TASKS AND SEND TASKS
+  %utility_module:isolate_element(Time,1)
   Tasks = load_tasks_recovery(Time),
   %SENDING ALL THE TASKS
   send_and_wait(create_tasks, Tasks, [Process_id], [Process_id]),

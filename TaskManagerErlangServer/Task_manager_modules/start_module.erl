@@ -4,17 +4,16 @@
 %% API
 -export([start/0, init/2]).
 -import(listener_module,[listener_loop/4]).
--import(testing_module, [client_test/2]).
 
 %This is a testing method to try multiple processes
 start() ->
   io:format("Starting~n"),
-  PID_primary = spawn('erlang-server@172.18.0.162', ?MODULE, init, [[], primary]),
+  PID_primary = spawn('erlang-server@172.18.0.162',start_module, init, [[], primary]),
 %%  timer:sleep(1000),
 %%
 %%  %Spawn multiple secondary nodes
-%%  PID_secondary = spawn(?MODULE, init, [[PID_primary], secondary]),
-%%  timer:sleep(1000),
+    PID_secondary = spawn('erlang-server@172.18.0.163', start_module, init, [[PID_primary], secondary]),
+    timer:sleep(20000),
 %%  PID_secondary3 = spawn(?MODULE, init, [[PID_primary], secondary]),
 %%  timer:sleep(1000),
 %%  PID_secondary2 = spawn(?MODULE, init, [[PID_primary], secondary]),
@@ -22,9 +21,9 @@ start() ->
 %%  PID_secondary4 = spawn(?MODULE, init, [[PID_primary], secondary]),
 %%  % register(primary_process, PID_primary),
 %%  timer:sleep(2000),
-%%  testing_module:client_test("A", PID_primary).
+  testing_module:client_test("A", PID_primary).
   %exit(PID_primary, testing_election)
-  spawn(testing_module, client_test, ["Ciao", PID_primary]).
+% spawn(?MODULE, client_test, ["Ciao", PID_primary]).
 
 
 %Stating node -

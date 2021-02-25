@@ -8,7 +8,7 @@
 
 check_host_recovery_registered(Host_pid) ->
   {ok,Ref_to_db} = odbc:connect("dsn=test_;server=localhost;database=TaskOrganizer;user=root;", []),
-  {selected, _, Data} = odbc:param_query(Ref_to_db, "SELECT host FROM recovery_hosts WHERE host=?",
+  {selected, _, Data} = odbc:param_query(Ref_to_db, "SELECT down_time FROM recovery_hosts WHERE host=?",
     [{{sql_varchar,255}, [atom_to_list(node(Host_pid))]}
     ]),
   odbc:disconnect(Ref_to_db),
@@ -94,7 +94,7 @@ update_task_db(Params) ->
 
 load_boards_recovery(Time) ->
   {ok,Ref_to_db} = odbc:connect("dsn=test_;server=localhost;database=TaskOrganizer;user=root;", []),
-  {selected,_, Boards}=odbc:sql_query(Ref_to_db, "SELECT * FROM boards WHERE last_update_time >= ?",
+  {selected,_, Boards}=odbc:param_query(Ref_to_db, "SELECT * FROM boards WHERE last_update_time >= ?",
     [{{sql_varchar,255},
       [Time]}
     ]),
@@ -105,7 +105,7 @@ load_boards_recovery(Time) ->
 
 load_tasks_recovery(Time) ->
   {ok,Ref_to_db} = odbc:connect("dsn=test_;server=localhost;database=TaskOrganizer;user=root;", []),
-  {selected, _, Tasks}=odbc:sql_query(Ref_to_db, "SELECT * FROM tasks
+  {selected, _, Tasks}=odbc:param_query(Ref_to_db, "SELECT * FROM tasks
                                                   WHERE last_update_time >= ? ",
     [{{sql_varchar,255},
       [Time]}
