@@ -10,7 +10,7 @@
 -author("Riccardo").
 
 %% API
--export([start/1, listener_loop/1, db_manager_loop/5, client_test/2, send_and_wait/4, test/0, testante/0]).
+-export([start/1, listener_loop/1, db_manager_loop/5, client_test/2, send_and_wait/4, test/0, testante/0, test_db/0]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %         Client code - For testing purposes
@@ -19,8 +19,8 @@ client_test(Title, PID_server)->
   PID_server ! {create_board, "Hello", primary, self()},
   %PID_server ! {create_stage, ["Stage2",Title], self()},
   PID_server ! {create_stage, {"Stage1",Title}, primary, self()},
-  PID_server ! {create_task,  {"This task is nice","2021-10-10", 1}, primary, self()},
-  PID_server ! {update_task,  {2,1}, primary, self()}.
+  PID_server ! {create_task, {"This task is nice","2021-10-10", 1}, primary, self()},
+  PID_server ! {update_task, {2,1}, primary, self()}.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -51,7 +51,11 @@ listener_loop([List_of_hosts])->
       spawn(?MODULE, db_manager_loop, [From, Operation, Params, Primary_info, [List_of_hosts]]),
       listener_loop([List_of_hosts])
   end.
-
+  
+test_db() ->
+	odbc:start(),
+	  {ok,Ref_to_db} = odbc:connect("dsn=test_;server=localhost;database=TaskOrganizer;user=root;", []),
+	  io:format("I am here").
 % The db_manager_loop
 % 1- create a connection to MySQL database
 % 2- Execute the query

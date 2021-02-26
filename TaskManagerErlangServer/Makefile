@@ -5,6 +5,7 @@ default:
 
 deploy:
 	$(MAKE) -C ../TaskManagerDocker test-node1
+	$(MAKE) -C ../TaskManagerDocker test-node2
 	$(MAKE) default
 
 compile:

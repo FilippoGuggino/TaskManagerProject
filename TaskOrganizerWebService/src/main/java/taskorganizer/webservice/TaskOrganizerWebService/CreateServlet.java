@@ -16,7 +16,6 @@ public class CreateServlet extends HttpServlet {
         String taskExp = request.getParameter("task-exp");
         String taskCreator= request.getParameter("task-creator");
 
-        System.out.println("ciiao");
         //todo send delete request to giuggio
         //todo redirect to original page
     }
