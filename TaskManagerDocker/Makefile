@@ -11,8 +11,7 @@ test-node1:
 	docker exec -ti -w /TaskManagerErlangServer mysql1 rebar3 compile
 	
 	docker exec -ti -w /TaskManagerErlangServer mysql1 erlc -I /TaskManagerErlangServer/_build/default/lib/ Task_manager_modules/start_module.erl Task_manager_modules/testing_module.erl Task_manager_modules/utility_module.erl Task_manager_modules/election_module.erl Task_manager_modules/listener_module.erl Task_manager_modules/message_sending_module.erl Task_manager_modules/query_module.erl Task_manager_modules/recover_node_module.erl
-	docker exec -dti -w /TaskManagerErlangServer mysql1 erl -name erlang-server@172.18.0.162 -pa _build/default/lib/*/ebin -setcookie test
-	docker exec -dti mysql1 /bin/sh
+	docker exec -dti -w /TaskManagerErlangServer mysql1 /bin/sh -c 'erl -name erlang-server@172.18.0.162 -pa _build/default/lib/*/ebin -setcookie test'
 
 start-rabbit:
 	$(MAKE) clean-rabbit
@@ -29,7 +28,7 @@ test-node2:
 	docker exec -ti -w /TaskManagerErlangServer mysql2 rebar3 compile
 
 	docker exec -ti -w /TaskManagerErlangServer mysql2 erlc -I /TaskManagerErlangServer/_build/default/lib/ Task_manager_modules/start_module.erl Task_manager_modules/testing_module.erl Task_manager_modules/utility_module.erl Task_manager_modules/election_module.erl Task_manager_modules/listener_module.erl Task_manager_modules/message_sending_module.erl Task_manager_modules/query_module.erl Task_manager_modules/recover_node_module.erl
-	docker exec -dti -w /TaskManagerErlangServer mysql2 erl -name erlang-server@172.18.0.163 -pa _build/default/lib/*/ebin -setcookie test
+	docker exec -dti -w /TaskManagerErlangServer mysql2 /bin/sh -c 'erl -name erlang-server@172.18.0.163 -pa _build/default/lib/*/ebin -setcookie test'
 	docker exec -dti mysql2 /bin/sh
 
 clean-rabbit:

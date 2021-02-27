@@ -1,3 +1,164 @@
 2021-02-18 12:16:29 =ERROR REPORT====
 Error in process <0.9.0> on node distributed@localhost with exit value:
 {{badmatch,{error,ehostunreach}},[{listener_responder,start,0,[{file,"listener_responder.erl"},{line,42}]},{erl_eval,do_apply,6,[{file,"erl_eval.erl"},{line,680}]},{init,start_it,1,[]},{init,start_em,1,[]},{init,do_boot,3,[]}]}
+2021-02-27 16:56:15 =CRASH REPORT====
+  crasher:
+    initial call: rabbit_writer:enter_mainloop/2
+    pid: <0.193.0>
+    registered_name: []
+    exception error: bad argument: [{rabbit_framing_amqp_0_9_1,encode_method_fields,1,[{file,"/run/media/filippo/dati/workspace/Task_manager/_build/default/lib/rabbit_common/src/rabbit_framing_amqp_0_9_1.erl"},{line,1133}]},{rabbit_binary_generator,build_simple_method_frame,3,[{file,"/run/media/filippo/dati/workspace/Task_manager/_build/default/lib/rabbit_common/src/rabbit_binary_generator.erl"},{line,50}]},{rabbit_writer,assemble_frames,5,[{file,"/run/media/filippo/dati/workspace/Task_manager/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,329}]},{rabbit_writer,internal_send_command_async,3,[{file,"/run/media/filippo/dati/workspace/Task_manager/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,362}]},{rabbit_writer,handle_message,3,[{file,"/run/media/filippo/dati/workspace/Task_manager/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,229}]},{rabbit_writer,mainloop1,2,[{file,"/run/media/filippo/dati/workspace/Task_manager/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,213}]},{rabbit_writer,mainloop,2,[{file,"/run/media/filippo/dati/workspace/Task_manager/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,204}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,226}]}]
+    ancestors: [<0.190.0>,<0.184.0>,<0.180.0>,<0.179.0>,amqp_sup,<0.177.0>]
+    message_queue_len: 1
+    messages: [{send_command,{'channel.close',200,<<"Goodbye">>,0,0}}]
+    links: [<0.190.0>]
+    dictionary: [{process_name,{rabbit_writer,{<<"client 172.18.0.1:33689 -> 172.18.0.160:5672">>,1}}}]
+    trap_exit: false
+    status: running
+    heap_size: 2586
+    stack_size: 28
+    reductions: 906
+  neighbours:
+2021-02-27 16:56:15 =SUPERVISOR REPORT====
+     Supervisor: {<0.190.0>,amqp_channel_sup}
+     Context:    child_terminated
+     Reason:     {badarg,[{rabbit_framing_amqp_0_9_1,encode_method_fields,1,[{file,"/run/media/filippo/dati/workspace/Task_manager/_build/default/lib/rabbit_common/src/rabbit_framing_amqp_0_9_1.erl"},{line,1133}]},{rabbit_binary_generator,build_simple_method_frame,3,[{file,"/run/media/filippo/dati/workspace/Task_manager/_build/default/lib/rabbit_common/src/rabbit_binary_generator.erl"},{line,50}]},{rabbit_writer,assemble_frames,5,[{file,"/run/media/filippo/dati/workspace/Task_manager/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,329}]},{rabbit_writer,internal_send_command_async,3,[{file,"/run/media/filippo/dati/workspace/Task_manager/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,362}]},{rabbit_writer,handle_message,3,[{file,"/run/media/filippo/dati/workspace/Task_manager/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,229}]},{rabbit_writer,mainloop1,2,[{file,"/run/media/filippo/dati/workspace/Task_manager/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,213}]},{rabbit_writer,mainloop,2,[{file,"/run/media/filippo/dati/workspace/Task_manager/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,204}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,226}]}]}
+     Offender:   [{pid,<0.193.0>},{name,writer},{mfargs,{rabbit_writer,start_link,[#Port<0.9>,1,131072,rabbit_framing_amqp_0_9_1,<0.192.0>,{<<"client 172.18.0.1:33689 -> 172.18.0.160:5672">>,1},false,1000000000]}},{restart_type,transient},{shutdown,30000},{child_type,worker}]
+
+2021-02-27 16:56:15 =SUPERVISOR REPORT====
+     Supervisor: {<0.190.0>,amqp_channel_sup}
+     Context:    shutdown
+     Reason:     reached_max_restart_intensity
+     Offender:   [{pid,<0.193.0>},{name,writer},{mfargs,{rabbit_writer,start_link,[#Port<0.9>,1,131072,rabbit_framing_amqp_0_9_1,<0.192.0>,{<<"client 172.18.0.1:33689 -> 172.18.0.160:5672">>,1},false,1000000000]}},{restart_type,transient},{shutdown,30000},{child_type,worker}]
+
+2021-02-27 16:59:11 =CRASH REPORT====
+  crasher:
+    initial call: rabbit_writer:enter_mainloop/2
+    pid: <0.193.0>
+    registered_name: []
+    exception error: bad argument: [{rabbit_framing_amqp_0_9_1,encode_method_fields,1,[{file,"/run/media/filippo/dati/workspace/Task_manager/_build/default/lib/rabbit_common/src/rabbit_framing_amqp_0_9_1.erl"},{line,1133}]},{rabbit_binary_generator,build_simple_method_frame,3,[{file,"/run/media/filippo/dati/workspace/Task_manager/_build/default/lib/rabbit_common/src/rabbit_binary_generator.erl"},{line,50}]},{rabbit_writer,assemble_frames,5,[{file,"/run/media/filippo/dati/workspace/Task_manager/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,329}]},{rabbit_writer,internal_send_command_async,3,[{file,"/run/media/filippo/dati/workspace/Task_manager/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,362}]},{rabbit_writer,handle_message,3,[{file,"/run/media/filippo/dati/workspace/Task_manager/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,229}]},{rabbit_writer,mainloop1,2,[{file,"/run/media/filippo/dati/workspace/Task_manager/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,213}]},{rabbit_writer,mainloop,2,[{file,"/run/media/filippo/dati/workspace/Task_manager/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,204}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,226}]}]
+    ancestors: [<0.190.0>,<0.184.0>,<0.180.0>,<0.179.0>,amqp_sup,<0.177.0>]
+    message_queue_len: 1
+    messages: [{send_command,{'channel.close',200,<<"Goodbye">>,0,0}}]
+    links: [<0.190.0>]
+    dictionary: [{process_name,{rabbit_writer,{<<"client 172.18.0.1:44861 -> 172.18.0.160:5672">>,1}}}]
+    trap_exit: false
+    status: running
+    heap_size: 2586
+    stack_size: 28
+    reductions: 905
+  neighbours:
+2021-02-27 16:59:11 =SUPERVISOR REPORT====
+     Supervisor: {<0.190.0>,amqp_channel_sup}
+     Context:    child_terminated
+     Reason:     {badarg,[{rabbit_framing_amqp_0_9_1,encode_method_fields,1,[{file,"/run/media/filippo/dati/workspace/Task_manager/_build/default/lib/rabbit_common/src/rabbit_framing_amqp_0_9_1.erl"},{line,1133}]},{rabbit_binary_generator,build_simple_method_frame,3,[{file,"/run/media/filippo/dati/workspace/Task_manager/_build/default/lib/rabbit_common/src/rabbit_binary_generator.erl"},{line,50}]},{rabbit_writer,assemble_frames,5,[{file,"/run/media/filippo/dati/workspace/Task_manager/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,329}]},{rabbit_writer,internal_send_command_async,3,[{file,"/run/media/filippo/dati/workspace/Task_manager/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,362}]},{rabbit_writer,handle_message,3,[{file,"/run/media/filippo/dati/workspace/Task_manager/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,229}]},{rabbit_writer,mainloop1,2,[{file,"/run/media/filippo/dati/workspace/Task_manager/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,213}]},{rabbit_writer,mainloop,2,[{file,"/run/media/filippo/dati/workspace/Task_manager/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,204}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,226}]}]}
+     Offender:   [{pid,<0.193.0>},{name,writer},{mfargs,{rabbit_writer,start_link,[#Port<0.9>,1,131072,rabbit_framing_amqp_0_9_1,<0.192.0>,{<<"client 172.18.0.1:44861 -> 172.18.0.160:5672">>,1},false,1000000000]}},{restart_type,transient},{shutdown,30000},{child_type,worker}]
+
+2021-02-27 16:59:11 =SUPERVISOR REPORT====
+     Supervisor: {<0.190.0>,amqp_channel_sup}
+     Context:    shutdown
+     Reason:     reached_max_restart_intensity
+     Offender:   [{pid,<0.193.0>},{name,writer},{mfargs,{rabbit_writer,start_link,[#Port<0.9>,1,131072,rabbit_framing_amqp_0_9_1,<0.192.0>,{<<"client 172.18.0.1:44861 -> 172.18.0.160:5672">>,1},false,1000000000]}},{restart_type,transient},{shutdown,30000},{child_type,worker}]
+
+2021-02-27 17:17:54 =ERROR REPORT====
+** Generic server <0.181.0> terminating 
+** Last message in was connect
+** When Server state == {<0.180.0>,{amqp_params_network,<<"guest">>,{plaintext,<<"guest">>},<<"/">>,"172.18.0.160","5672",2047,0,10,60000,none,[fun amqp_auth_mechanisms:plain/3,fun amqp_auth_mechanisms:amqplain/3],[],[]}}
+** Reason for termination ==
+** {function_clause,[{amqp_gen_connection,terminate,[{function_clause,[{inet_tcp,getserv,["5672"],[{file,"inet_tcp.erl"},{line,55}]},{gen_tcp,connect1,4,[{file,"gen_tcp.erl"},{line,181}]},{gen_tcp,connect,4,[{file,"gen_tcp.erl"},{line,165}]},{amqp_network_connection,do_connect,4,[{file,"/run/media/filippo/dati/workspace/IdeaProjects/TaskManagerProject/TaskManagerErlangServer/_build/default/lib/amqp_client/src/amqp_network_connection.erl"},{line,123}]},{amqp_gen_connection,handle_call,3,[{file,"/run/media/filippo/dati/workspace/IdeaProjects/TaskManagerProject/TaskManagerErlangServer/_build/default/lib/amqp_client/src/amqp_gen_connection.erl"},{line,167}]},{gen_server,try_handle_call,4,[{file,"gen_server.erl"},{line,715}]},{gen_server,handle_msg,6,[{file,"gen_server.erl"},{line,744}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,226}]}]},{<0.180.0>,{amqp_params_network,<<"guest">>,{plaintext,<<"guest">>},<<"/">>,"172.18.0.160","5672",2047,0,10,60000,none,[fun amqp_auth_mechanisms:plain/3,fun amqp_auth_mechanisms:amqplain/3],[],[]}}],[{file,"/run/media/filippo/dati/workspace/IdeaProjects/TaskManagerProject/TaskManagerErlangServer/_build/default/lib/amqp_client/src/amqp_gen_connection.erl"},{line,235}]},{gen_server,try_terminate,3,[{file,"gen_server.erl"},{line,727}]},{gen_server,terminate,10,[{file,"gen_server.erl"},{line,912}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,226}]}]}
+** Client <0.84.0> stacktrace
+** [{gen,do_call,4,[{file,"gen.erl"},{line,208}]},{gen_server,call,3,[{file,"gen_server.erl"},{line,242}]},{start_module,init,2,[{file,"Task_manager_modules/start_module.erl"},{line,47}]}]
+2021-02-27 17:17:54 =CRASH REPORT====
+  crasher:
+    initial call: amqp_gen_connection:init/1
+    pid: <0.181.0>
+    registered_name: []
+    exception error: {function_clause,[{amqp_gen_connection,terminate,[{function_clause,[{inet_tcp,getserv,["5672"],[{file,"inet_tcp.erl"},{line,55}]},{gen_tcp,connect1,4,[{file,"gen_tcp.erl"},{line,181}]},{gen_tcp,connect,4,[{file,"gen_tcp.erl"},{line,165}]},{amqp_network_connection,do_connect,4,[{file,"/run/media/filippo/dati/workspace/IdeaProjects/TaskManagerProject/TaskManagerErlangServer/_build/default/lib/amqp_client/src/amqp_network_connection.erl"},{line,123}]},{amqp_gen_connection,handle_call,3,[{file,"/run/media/filippo/dati/workspace/IdeaProjects/TaskManagerProject/TaskManagerErlangServer/_build/default/lib/amqp_client/src/amqp_gen_connection.erl"},{line,167}]},{gen_server,try_handle_call,4,[{file,"gen_server.erl"},{line,715}]},{gen_server,handle_msg,6,[{file,"gen_server.erl"},{line,744}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,226}]}]},{<0.180.0>,{amqp_params_network,<<"guest">>,{plaintext,<<"guest">>},<<"/">>,"172.18.0.160","5672",2047,0,10,60000,none,[fun amqp_auth_mechanisms:plain/3,fun amqp_auth_mechanisms:amqplain/3],[],[]}}],[{file,"/run/media/filippo/dati/workspace/IdeaProjects/TaskManagerProject/TaskManagerErlangServer/_build/default/lib/amqp_client/src/amqp_gen_connection.erl"},{line,235}]},{gen_server,try_terminate,3,[{file,"gen_server.erl"},{line,727}]},{gen_server,terminate,10,[{file,"gen_server.erl"},{line,912}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,226}]}]}
+    ancestors: [<0.179.0>,amqp_sup,<0.177.0>]
+    message_queue_len: 0
+    messages: []
+    links: [<0.179.0>]
+    dictionary: []
+    trap_exit: true
+    status: running
+    heap_size: 4185
+    stack_size: 28
+    reductions: 1397
+  neighbours:
+2021-02-27 17:17:55 =SUPERVISOR REPORT====
+     Supervisor: {<0.179.0>,amqp_connection_sup}
+     Context:    child_terminated
+     Reason:     {function_clause,[{amqp_gen_connection,terminate,[{function_clause,[{inet_tcp,getserv,["5672"],[{file,"inet_tcp.erl"},{line,55}]},{gen_tcp,connect1,4,[{file,"gen_tcp.erl"},{line,181}]},{gen_tcp,connect,4,[{file,"gen_tcp.erl"},{line,165}]},{amqp_network_connection,do_connect,4,[{file,"/run/media/filippo/dati/workspace/IdeaProjects/TaskManagerProject/TaskManagerErlangServer/_build/default/lib/amqp_client/src/amqp_network_connection.erl"},{line,123}]},{amqp_gen_connection,handle_call,3,[{file,"/run/media/filippo/dati/workspace/IdeaProjects/TaskManagerProject/TaskManagerErlangServer/_build/default/lib/amqp_client/src/amqp_gen_connection.erl"},{line,167}]},{gen_server,try_handle_call,4,[{file,"gen_server.erl"},{line,715}]},{gen_server,handle_msg,6,[{file,"gen_server.erl"},{line,744}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,226}]}]},{<0.180.0>,{amqp_params_network,<<"guest">>,{plaintext,<<"guest">>},<<"/">>,"172.18.0.160","5672",2047,0,10,60000,none,[fun amqp_auth_mechanisms:plain/3,fun amqp_auth_mechanisms:amqplain/3],[],[]}}],[{file,"/run/media/filippo/dati/workspace/IdeaProjects/TaskManagerProject/TaskManagerErlangServer/_build/default/lib/amqp_client/src/amqp_gen_connection.erl"},{line,235}]},{gen_server,try_terminate,3,[{file,"gen_server.erl"},{line,727}]},{gen_server,terminate,10,[{file,"gen_server.erl"},{line,912}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,226}]}]}
+     Offender:   [{pid,<0.181.0>},{name,connection},{mfargs,{amqp_gen_connection,start_link,[<0.180.0>,{amqp_params_network,<<"guest">>,{plaintext,<<"guest">>},<<"/">>,"172.18.0.160","5672",2047,0,10,60000,none,[fun amqp_auth_mechanisms:plain/3,fun amqp_auth_mechanisms:amqplain/3],[],[]}]}},{restart_type,intrinsic},{shutdown,brutal_kill},{child_type,worker}]
+
+2021-02-27 17:17:55 =SUPERVISOR REPORT====
+     Supervisor: {<0.179.0>,amqp_connection_sup}
+     Context:    shutdown
+     Reason:     reached_max_restart_intensity
+     Offender:   [{pid,<0.181.0>},{name,connection},{mfargs,{amqp_gen_connection,start_link,[<0.180.0>,{amqp_params_network,<<"guest">>,{plaintext,<<"guest">>},<<"/">>,"172.18.0.160","5672",2047,0,10,60000,none,[fun amqp_auth_mechanisms:plain/3,fun amqp_auth_mechanisms:amqplain/3],[],[]}]}},{restart_type,intrinsic},{shutdown,brutal_kill},{child_type,worker}]
+
+2021-02-27 17:18:53 =ERROR REPORT====
+** Generic server <0.181.0> terminating 
+** Last message in was connect
+** When Server state == {<0.180.0>,{amqp_params_network,<<"guest">>,{plaintext,<<"guest">>},<<"/">>,"172.18.0.160","5672",2047,0,10,60000,none,[fun amqp_auth_mechanisms:plain/3,fun amqp_auth_mechanisms:amqplain/3],[],[]}}
+** Reason for termination ==
+** {function_clause,[{amqp_gen_connection,terminate,[{function_clause,[{inet_tcp,getserv,["5672"],[{file,"inet_tcp.erl"},{line,55}]},{gen_tcp,connect1,4,[{file,"gen_tcp.erl"},{line,181}]},{gen_tcp,connect,4,[{file,"gen_tcp.erl"},{line,165}]},{amqp_network_connection,do_connect,4,[{file,"/run/media/filippo/dati/workspace/IdeaProjects/TaskManagerProject/TaskManagerErlangServer/_build/default/lib/amqp_client/src/amqp_network_connection.erl"},{line,123}]},{amqp_gen_connection,handle_call,3,[{file,"/run/media/filippo/dati/workspace/IdeaProjects/TaskManagerProject/TaskManagerErlangServer/_build/default/lib/amqp_client/src/amqp_gen_connection.erl"},{line,167}]},{gen_server,try_handle_call,4,[{file,"gen_server.erl"},{line,715}]},{gen_server,handle_msg,6,[{file,"gen_server.erl"},{line,744}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,226}]}]},{<0.180.0>,{amqp_params_network,<<"guest">>,{plaintext,<<"guest">>},<<"/">>,"172.18.0.160","5672",2047,0,10,60000,none,[fun amqp_auth_mechanisms:plain/3,fun amqp_auth_mechanisms:amqplain/3],[],[]}}],[{file,"/run/media/filippo/dati/workspace/IdeaProjects/TaskManagerProject/TaskManagerErlangServer/_build/default/lib/amqp_client/src/amqp_gen_connection.erl"},{line,235}]},{gen_server,try_terminate,3,[{file,"gen_server.erl"},{line,727}]},{gen_server,terminate,10,[{file,"gen_server.erl"},{line,912}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,226}]}]}
+** Client <0.84.0> stacktrace
+** [{gen,do_call,4,[{file,"gen.erl"},{line,208}]},{gen_server,call,3,[{file,"gen_server.erl"},{line,242}]},{start_module,init,2,[{file,"Task_manager_modules/start_module.erl"},{line,47}]}]
+2021-02-27 17:18:53 =CRASH REPORT====
+  crasher:
+    initial call: amqp_gen_connection:init/1
+    pid: <0.181.0>
+    registered_name: []
+    exception error: {function_clause,[{amqp_gen_connection,terminate,[{function_clause,[{inet_tcp,getserv,["5672"],[{file,"inet_tcp.erl"},{line,55}]},{gen_tcp,connect1,4,[{file,"gen_tcp.erl"},{line,181}]},{gen_tcp,connect,4,[{file,"gen_tcp.erl"},{line,165}]},{amqp_network_connection,do_connect,4,[{file,"/run/media/filippo/dati/workspace/IdeaProjects/TaskManagerProject/TaskManagerErlangServer/_build/default/lib/amqp_client/src/amqp_network_connection.erl"},{line,123}]},{amqp_gen_connection,handle_call,3,[{file,"/run/media/filippo/dati/workspace/IdeaProjects/TaskManagerProject/TaskManagerErlangServer/_build/default/lib/amqp_client/src/amqp_gen_connection.erl"},{line,167}]},{gen_server,try_handle_call,4,[{file,"gen_server.erl"},{line,715}]},{gen_server,handle_msg,6,[{file,"gen_server.erl"},{line,744}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,226}]}]},{<0.180.0>,{amqp_params_network,<<"guest">>,{plaintext,<<"guest">>},<<"/">>,"172.18.0.160","5672",2047,0,10,60000,none,[fun amqp_auth_mechanisms:plain/3,fun amqp_auth_mechanisms:amqplain/3],[],[]}}],[{file,"/run/media/filippo/dati/workspace/IdeaProjects/TaskManagerProject/TaskManagerErlangServer/_build/default/lib/amqp_client/src/amqp_gen_connection.erl"},{line,235}]},{gen_server,try_terminate,3,[{file,"gen_server.erl"},{line,727}]},{gen_server,terminate,10,[{file,"gen_server.erl"},{line,912}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,226}]}]}
+    ancestors: [<0.179.0>,amqp_sup,<0.177.0>]
+    message_queue_len: 0
+    messages: []
+    links: [<0.179.0>]
+    dictionary: []
+    trap_exit: true
+    status: running
+    heap_size: 4185
+    stack_size: 28
+    reductions: 1397
+  neighbours:
+2021-02-27 17:18:53 =SUPERVISOR REPORT====
+     Supervisor: {<0.179.0>,amqp_connection_sup}
+     Context:    child_terminated
+     Reason:     {function_clause,[{amqp_gen_connection,terminate,[{function_clause,[{inet_tcp,getserv,["5672"],[{file,"inet_tcp.erl"},{line,55}]},{gen_tcp,connect1,4,[{file,"gen_tcp.erl"},{line,181}]},{gen_tcp,connect,4,[{file,"gen_tcp.erl"},{line,165}]},{amqp_network_connection,do_connect,4,[{file,"/run/media/filippo/dati/workspace/IdeaProjects/TaskManagerProject/TaskManagerErlangServer/_build/default/lib/amqp_client/src/amqp_network_connection.erl"},{line,123}]},{amqp_gen_connection,handle_call,3,[{file,"/run/media/filippo/dati/workspace/IdeaProjects/TaskManagerProject/TaskManagerErlangServer/_build/default/lib/amqp_client/src/amqp_gen_connection.erl"},{line,167}]},{gen_server,try_handle_call,4,[{file,"gen_server.erl"},{line,715}]},{gen_server,handle_msg,6,[{file,"gen_server.erl"},{line,744}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,226}]}]},{<0.180.0>,{amqp_params_network,<<"guest">>,{plaintext,<<"guest">>},<<"/">>,"172.18.0.160","5672",2047,0,10,60000,none,[fun amqp_auth_mechanisms:plain/3,fun amqp_auth_mechanisms:amqplain/3],[],[]}}],[{file,"/run/media/filippo/dati/workspace/IdeaProjects/TaskManagerProject/TaskManagerErlangServer/_build/default/lib/amqp_client/src/amqp_gen_connection.erl"},{line,235}]},{gen_server,try_terminate,3,[{file,"gen_server.erl"},{line,727}]},{gen_server,terminate,10,[{file,"gen_server.erl"},{line,912}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,226}]}]}
+     Offender:   [{pid,<0.181.0>},{name,connection},{mfargs,{amqp_gen_connection,start_link,[<0.180.0>,{amqp_params_network,<<"guest">>,{plaintext,<<"guest">>},<<"/">>,"172.18.0.160","5672",2047,0,10,60000,none,[fun amqp_auth_mechanisms:plain/3,fun amqp_auth_mechanisms:amqplain/3],[],[]}]}},{restart_type,intrinsic},{shutdown,brutal_kill},{child_type,worker}]
+
+2021-02-27 17:18:53 =SUPERVISOR REPORT====
+     Supervisor: {<0.179.0>,amqp_connection_sup}
+     Context:    shutdown
+     Reason:     reached_max_restart_intensity
+     Offender:   [{pid,<0.181.0>},{name,connection},{mfargs,{amqp_gen_connection,start_link,[<0.180.0>,{amqp_params_network,<<"guest">>,{plaintext,<<"guest">>},<<"/">>,"172.18.0.160","5672",2047,0,10,60000,none,[fun amqp_auth_mechanisms:plain/3,fun amqp_auth_mechanisms:amqplain/3],[],[]}]}},{restart_type,intrinsic},{shutdown,brutal_kill},{child_type,worker}]
+
+2021-02-27 17:21:51 =CRASH REPORT====
+  crasher:
+    initial call: rabbit_writer:enter_mainloop/2
+    pid: <0.193.0>
+    registered_name: []
+    exception error: bad argument: [{rabbit_framing_amqp_0_9_1,encode_method_fields,1,[{file,"/run/media/filippo/dati/workspace/IdeaProjects/TaskManagerProject/TaskManagerErlangServer/_build/default/lib/rabbit_common/src/rabbit_framing_amqp_0_9_1.erl"},{line,1083}]},{rabbit_binary_generator,build_simple_method_frame,3,[{file,"/run/media/filippo/dati/workspace/IdeaProjects/TaskManagerProject/TaskManagerErlangServer/_build/default/lib/rabbit_common/src/rabbit_binary_generator.erl"},{line,50}]},{rabbit_writer,internal_send_command_async,2,[{file,"/run/media/filippo/dati/workspace/IdeaProjects/TaskManagerProject/TaskManagerErlangServer/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,353}]},{rabbit_writer,handle_message,3,[{file,"/run/media/filippo/dati/workspace/IdeaProjects/TaskManagerProject/TaskManagerErlangServer/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,229}]},{rabbit_writer,mainloop1,2,[{file,"/run/media/filippo/dati/workspace/IdeaProjects/TaskManagerProject/TaskManagerErlangServer/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,213}]},{rabbit_writer,mainloop,2,[{file,"/run/media/filippo/dati/workspace/IdeaProjects/TaskManagerProject/TaskManagerErlangServer/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,204}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,226}]}]
+    ancestors: [<0.190.0>,<0.184.0>,<0.180.0>,<0.179.0>,amqp_sup,<0.177.0>]
+    message_queue_len: 0
+    messages: []
+    links: [<0.190.0>]
+    dictionary: [{process_name,{rabbit_writer,{<<"client 172.18.0.1:55057 -> 172.18.0.160:5672">>,1}}}]
+    trap_exit: false
+    status: running
+    heap_size: 2586
+    stack_size: 28
+    reductions: 828
+  neighbours:
+2021-02-27 17:21:51 =SUPERVISOR REPORT====
+     Supervisor: {<0.190.0>,amqp_channel_sup}
+     Context:    child_terminated
+     Reason:     {badarg,[{rabbit_framing_amqp_0_9_1,encode_method_fields,1,[{file,"/run/media/filippo/dati/workspace/IdeaProjects/TaskManagerProject/TaskManagerErlangServer/_build/default/lib/rabbit_common/src/rabbit_framing_amqp_0_9_1.erl"},{line,1083}]},{rabbit_binary_generator,build_simple_method_frame,3,[{file,"/run/media/filippo/dati/workspace/IdeaProjects/TaskManagerProject/TaskManagerErlangServer/_build/default/lib/rabbit_common/src/rabbit_binary_generator.erl"},{line,50}]},{rabbit_writer,internal_send_command_async,2,[{file,"/run/media/filippo/dati/workspace/IdeaProjects/TaskManagerProject/TaskManagerErlangServer/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,353}]},{rabbit_writer,handle_message,3,[{file,"/run/media/filippo/dati/workspace/IdeaProjects/TaskManagerProject/TaskManagerErlangServer/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,229}]},{rabbit_writer,mainloop1,2,[{file,"/run/media/filippo/dati/workspace/IdeaProjects/TaskManagerProject/TaskManagerErlangServer/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,213}]},{rabbit_writer,mainloop,2,[{file,"/run/media/filippo/dati/workspace/IdeaProjects/TaskManagerProject/TaskManagerErlangServer/_build/default/lib/rabbit_common/src/rabbit_writer.erl"},{line,204}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,226}]}]}
+     Offender:   [{pid,<0.193.0>},{name,writer},{mfargs,{rabbit_writer,start_link,[#Port<0.9>,1,131072,rabbit_framing_amqp_0_9_1,<0.192.0>,{<<"client 172.18.0.1:55057 -> 172.18.0.160:5672">>,1},false,1000000000]}},{restart_type,transient},{shutdown,30000},{child_type,worker}]
+
+2021-02-27 17:21:51 =SUPERVISOR REPORT====
+     Supervisor: {<0.190.0>,amqp_channel_sup}
+     Context:    shutdown
+     Reason:     reached_max_restart_intensity
+     Offender:   [{pid,<0.193.0>},{name,writer},{mfargs,{rabbit_writer,start_link,[#Port<0.9>,1,131072,rabbit_framing_amqp_0_9_1,<0.192.0>,{<<"client 172.18.0.1:55057 -> 172.18.0.160:5672">>,1},false,1000000000]}},{restart_type,transient},{shutdown,30000},{child_type,worker}]
+
