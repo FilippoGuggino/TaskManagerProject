@@ -14,12 +14,12 @@ start_localhost() ->
 %This is a testing method to try multiple processes
 start() ->
      io:format("Starting~n"),
-     PID_primary = spawn('erlang-server@172.18.0.162', start_module, init, [[], primary]).
+     PID_primary = spawn('erlang-server@172.18.0.162', start_module, init, [[], primary]),
 %%  timer:sleep(1000),
 %%
 %%  %Spawn multiple secondary nodes
-     %PID_secondary = spawn('erlang-server@172.18.0.163', start_module, init, [[PID_primary], secondary]),
-     %timer:sleep(20000),
+     PID_secondary = spawn('erlang-server@172.18.0.163', start_module, init, [[PID_primary], secondary]),
+     timer:sleep(2000),
 %%  PID_secondary3 = spawn(?MODULE, init, [[PID_primary], secondary]),
 %%  timer:sleep(1000),
 %%  PID_secondary2 = spawn(?MODULE, init, [[PID_primary], secondary]),
@@ -28,7 +28,7 @@ start() ->
 %%  % register(primary_process, PID_primary),
 %%  timer:sleep(2000),
 %% testing_module:client_test("A", PID_primary).
-%exit(PID_primary, testing_election)
+     exit(PID_primary, testing_election).
 % spawn(?MODULE, client_test, ["Ciao", PID_primary]).
 
 

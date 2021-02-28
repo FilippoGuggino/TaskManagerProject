@@ -47,7 +47,6 @@ server_up_message([Updated_list_of_hosts], [Host | T]) ->
 
 recovery_routine(Process_id, List_of_hosts) ->
   io:format("PRIMARY: starting recovery routine for secondary~n"),
-  Process_id ! {ack_new_server_up, List_of_hosts, self()},
   Data = check_host_recovery_registered(Process_id),
   %if
   %  Data == [] ->

@@ -39,7 +39,12 @@ listener_loop([List_of_hosts], Server_type, Sent_heartbeat, Election_ready) ->
                New_election_ready = Election_ready;
           {election_victory, Received_list_of_hosts, New_server_type, From} ->
                io:format("~p: Server pid: ~p has been elected as the primary~n", [self(), From]),
-               Updated_list_of_hosts = [From | Received_list_of_hosts],
+               case New_server_type of
+                    primary ->
+                         Updated_list_of_hosts = Received_list_of_hosts;
+                    _ ->
+                         Updated_list_of_hosts = [From | Received_list_of_hosts]
+               end,
                New_sent_heartbeat = false,
                New_election_ready = true;
      % TODO think about synchronization issues
@@ -58,12 +63,14 @@ listener_loop([List_of_hosts], Server_type, Sent_heartbeat, Election_ready) ->
                New_server_type = Server_type,
                % remove empty lists using list comprehension
                Updated_list_of_hosts = List_of_hosts ++ [From],
-
-               %Recovery Host routine - send it all the data
-               recovery_routine(From, List_of_hosts),
+     
+               From ! {ack_new_server_up, Updated_list_of_hosts, self()},
+               
                %Send to all the other servers active the new host that joined
                server_up_message(Updated_list_of_hosts, List_of_hosts),
-               % From ! {ack_new_server_up, Updated_list_of_hosts, self()},
+               
+               %Recovery Host routine - send it all the data
+               recovery_routine(From, List_of_hosts),
                New_election_ready = Election_ready;
      % update_new_server_state(From);
      % TODO update new server database state
