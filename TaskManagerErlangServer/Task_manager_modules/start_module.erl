@@ -18,8 +18,7 @@ start() ->
 %%  timer:sleep(1000),
 %%
 %%  %Spawn multiple secondary nodes
-     PID_secondary = spawn('erlang-server@172.18.0.163', start_module, init, [[PID_primary], secondary]),
-     timer:sleep(2000),
+     PID_secondary = spawn('erlang-server@172.18.0.163', start_module, init, [[PID_primary], secondary]).
 %%  PID_secondary3 = spawn(?MODULE, init, [[PID_primary], secondary]),
 %%  timer:sleep(1000),
 %%  PID_secondary2 = spawn(?MODULE, init, [[PID_primary], secondary]),
@@ -28,7 +27,7 @@ start() ->
 %%  % register(primary_process, PID_primary),
 %%  timer:sleep(2000),
 %% testing_module:client_test("A", PID_primary).
-     exit(PID_primary, testing_election).
+%% %exit(PID_primary, testing_election).
 % spawn(?MODULE, client_test, ["Ciao", PID_primary]).
 
 
@@ -42,47 +41,12 @@ init(List_of_hosts, Server_type) ->
           % This host is the primary
           primary ->
                io:format("~p: sono il primario~n", [self()]),
-               % Start connection with RabbitMQ
-               application:ensure_started(amqp_client),
-               {ok, Connection} = amqp_connection:start(#amqp_params_network{host = "172.18.0.160"}),
-               {ok, Channel} = amqp_connection:open_channel(Connection),
-
-               Declare = #'queue.declare'{queue = <<"my_queue">>},
-               #'queue.declare_ok'{} = amqp_channel:call(Channel, Declare),
-
-               Primary_queue_name = <<"primary_queue">>,
-               Exchange_name = <<"topics_boards">>,
-               % Create new Exchange, used to dispatch updates to "interested" clients
-               Exchange = #'exchange.declare'{exchange = Exchange_name,
-                    type = <<"topic">>},
-               #'exchange.declare_ok'{} = amqp_channel:call(Channel, Exchange),
-     
-               % Create queue containing a message with the PID of the primary node
-               % This message will be used from every web-server whenever they can't receive an ack from the erlang-server
-               Primary_queue = #'queue.declare'{queue = Primary_queue_name},
-               #'queue.declare_ok'{} = amqp_channel:call(Channel, Primary_queue),
-     
-               Routing_key = <<"primary_pid">>,
-               Binding = #'queue.bind'{queue       = Primary_queue_name,
-                                        exchange    = Exchange_name,
-                                        routing_key = Routing_key},
-               #'queue.bind_ok'{} = amqp_channel:call(Channel, Binding),
-     
-               % TODO see how this value can be used from java web server
-               Payload = term_to_binary(self()),
-
-               Publish = #'basic.publish'{exchange = Exchange_name, routing_key = Routing_key},
-               amqp_channel:cast(Channel, Publish, #amqp_msg{payload = Payload}),
-               
-               %% Close the channel
-               amqp_channel:close(Channel),
-               %% Close the connection
-               amqp_connection:close(Connection),
+               init_rabbitmq(),
                listener_loop([[]], primary, false, true);
                % This host is a Secondary
           secondary ->
                io:format("~p: sono un secondario~n", [self()]),
-% TODO send new_server_up to primary
+               % TODO send new_server_up to primary
                [PID_primary | List_without_primary] = List_of_hosts,
                PID_primary ! {new_server_up, self()},
                receive
@@ -98,3 +62,37 @@ init(List_of_hosts, Server_type) ->
                     exit(cant_connect_to_primary)
                end
      end.
+
+init_rabbitmq() ->
+     % Start connection with RabbitMQ
+     application:ensure_started(amqp_client),
+     {ok, Connection} = amqp_connection:start(#amqp_params_network{host = "172.18.0.160"}),
+     {ok, Channel} = amqp_connection:open_channel(Connection),
+     
+     Primary_queue_name = <<"primary_queue">>,
+     Exchange_name = <<"topics_boards">>,
+     % Create new Exchange, used to dispatch updates to "interested" clients
+     Exchange = #'exchange.declare'{exchange = Exchange_name,
+          type = <<"topic">>},
+     #'exchange.declare_ok'{} = amqp_channel:call(Channel, Exchange),
+     
+     % Create queue containing a message with the PID of the primary node
+     % This message will be used from every web-server whenever they can't receive an ack from the erlang-server
+     Primary_queue = #'queue.declare'{queue = Primary_queue_name},
+     #'queue.declare_ok'{} = amqp_channel:call(Channel, Primary_queue),
+     
+     Routing_key = <<"primary_pid">>,
+     Binding = #'queue.bind'{queue       = Primary_queue_name,
+          exchange    = Exchange_name,
+          routing_key = Routing_key},
+     #'queue.bind_ok'{} = amqp_channel:call(Channel, Binding),
+     
+     Payload = term_to_binary(self()),
+     
+     Publish = #'basic.publish'{exchange = Exchange_name, routing_key = Routing_key},
+     amqp_channel:cast(Channel, Publish, #amqp_msg{payload = Payload}),
+     
+     %% Close the channel
+     amqp_channel:close(Channel),
+     %% Close the connection
+     amqp_connection:close(Connection).

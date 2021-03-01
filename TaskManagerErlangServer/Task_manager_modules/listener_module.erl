@@ -9,6 +9,7 @@
 %% API
 -export([listener_loop/4, receive_acks/2, db_manager_loop/6]).
 
+-include_lib("amqp_client/include/amqp_client.hrl").
 % The listener_loop is a generic listener
 
 % List_of_hosts contains all hosts' PIDs (NOTE: the primary does not save its own PID in order
@@ -41,6 +42,30 @@ listener_loop([List_of_hosts], Server_type, Sent_heartbeat, Election_ready) ->
                io:format("~p: Server pid: ~p has been elected as the primary~n", [self(), From]),
                case New_server_type of
                     primary ->
+                         
+                         % Start connection with RabbitMQ
+                         application:ensure_started(amqp_client),
+                         {ok, Connection} = amqp_connection:start(#amqp_params_network{host = "172.18.0.160"}),
+                         {ok, Channel} = amqp_connection:open_channel(Connection),
+     
+                         % Update message inside rabbitmq indicating PID of the primary
+                         Get = #'basic.get'{queue = <<"primary_queue">>},
+                         {#'basic.get_ok'{delivery_tag = Tag}, Content} = amqp_channel:call(Channel, Get),
+                         %#amqp_msg{payload = Payload} = Content,
+                         amqp_channel:cast(Channel, #'basic.ack'{delivery_tag = Tag}),
+     
+                         Payload = term_to_binary(self()),
+                         
+                         Routing_key = <<"primary_pid">>,
+                         Exchange_name = <<"topics_boards">>,
+                         Publish = #'basic.publish'{exchange = Exchange_name, routing_key = Routing_key},
+                         amqp_channel:cast(Channel, Publish, #amqp_msg{payload = Payload}),
+     
+                         %% Close the channel
+                         amqp_channel:close(Channel),
+
+                         %% Close the connection
+                         amqp_connection:close(Connection),
                          Updated_list_of_hosts = Received_list_of_hosts;
                     _ ->
                          Updated_list_of_hosts = [From | Received_list_of_hosts]

@@ -1,14 +1,14 @@
 package taskorganizer.webservice.TaskOrganizerWebService;
 
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.ConnectionFactory;
-import com.rabbitmq.client.DeliverCallback;
+import com.ericsson.otp.erlang.*;
+import com.rabbitmq.client.*;
 
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.concurrent.TimeoutException;
+
+import static java.lang.System.exit;
 
 public class RabbitMQManager {
     private static String QUEUE_NAME;
@@ -17,13 +17,13 @@ public class RabbitMQManager {
     private static Connection connection = null;
     private static Channel channel = null;
 
-    static{
+    static {
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost("172.18.0.160");
         try {
             connection = factory.newConnection();
             channel = connection.createChannel();
-        }catch (TimeoutException | IOException e) {
+        } catch (TimeoutException | IOException e) {
             e.printStackTrace();
         }
     }
@@ -53,9 +53,20 @@ public class RabbitMQManager {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+
+
+
+
+        MessageManager man = new MessageManager();
+        try {
+            man.loadBoards();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    public synchronized static void createBinding(String boardTitle){
+    public synchronized static void createBinding(String boardTitle) {
         try {
             channel.queueBind(QUEUE_NAME, EXCHANGE_NAME, boardTitle);
         } catch (IOException e) {
@@ -63,11 +74,34 @@ public class RabbitMQManager {
         }
     }
 
-    public synchronized static void removeBinding(String boardTitle){
+    public synchronized static void removeBinding(String boardTitle) {
         try {
             channel.queueUnbind(QUEUE_NAME, EXCHANGE_NAME, boardTitle);
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    /*
+     * Fetch primary PID from rabbitmq
+     * */
+    public synchronized static OtpErlangPid fetchPrimary() {
+        OtpErlangPid pid = null;
+        try {
+            GetResponse response = null;
+            while (response == null) {
+                // get message from "primary_queue" without sending ann ACK back
+                // This will result with the message not being cancelled from the queue -> other web-server
+                // may need the same message
+                response = channel.basicGet("primary_queue", false);
+            }
+            OtpInputStream mess = new OtpInputStream(response.getBody());
+            pid = mess.read_pid();
+            System.out.println("Primary pid: " + pid.toString());
+        } catch (IOException | OtpErlangDecodeException e) {
+            e.printStackTrace();
+        }
+        return pid;
+
     }
 }

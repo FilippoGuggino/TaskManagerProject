@@ -16,7 +16,7 @@ public class BoardServlet extends HttpServlet{
     MessageManager manager;
 
     public void init() {
-        this.manager = new MessageManager();
+        //this.manager = new MessageManager();
     }
 
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {

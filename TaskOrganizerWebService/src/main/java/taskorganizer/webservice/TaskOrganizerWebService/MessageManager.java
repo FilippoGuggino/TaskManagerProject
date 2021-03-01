@@ -6,9 +6,12 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
+import static java.lang.System.exit;
+
 public class MessageManager {
     OtpNode webserver;
     OtpMbox mbox;
+    OtpErlangPid primaryPid;
 
     public MessageManager(){
         try {
@@ -17,10 +20,10 @@ public class MessageManager {
             e.printStackTrace();
         }
         this.mbox = this.webserver.createMbox("webserver");
-        // TODO i don't think this is needed
         this.mbox.registerName("webserver");
         System.out.println("Connecting to the primary...");
-        if (this.webserver.ping("erlang-server@172.18.0.162",2000)){
+        this.primaryPid = RabbitMQManager.fetchPrimary();
+        if (this.webserver.ping(this.primaryPid.node(), 2000)){
             System.out.println("OK: Primary server is online!");
         }
         else {
@@ -28,18 +31,25 @@ public class MessageManager {
             System.out.println("WARNING: Primary server is offline!");
         }
     }
-    public ArrayList<String> loadBoards() throws OtpErlangExit, OtpErlangDecodeException {
-        OtpErlangObject[] msg = new OtpErlangObject[3];
-        msg[0] = new OtpErlangAtom("load_boards");
-        msg[1] = new OtpErlangAtom("primary");
-        msg[2] = this.mbox.self();
-        OtpErlangTuple formatted_msg = new OtpErlangTuple(msg);
-        mbox.send("primary",formatted_msg);
 
-        OtpErlangObject response;
-        OtpErlangTuple boards;
+    public ArrayList<String> loadBoards() throws OtpErlangDecodeException {
+        OtpErlangObject[] msg = new OtpErlangObject[4];
+        msg[0] = new OtpErlangAtom("load_boards");
+        msg[1] = new OtpErlangAtom("load_boards");
+        msg[2] = new OtpErlangAtom("primary");
+        msg[3] = this.mbox.self();
+        OtpErlangTuple formatted_msg = new OtpErlangTuple(msg);
+
+        OtpErlangObject response = null;
+        OtpErlangTuple boards = null;
         ArrayList<String> board_list = new ArrayList<>();
-        response = this.mbox.receive();
+        response = sendAndWaitForResponse(formatted_msg);
+
+        if(response == null){
+            System.out.println("An error occurred while communicating with the primary");
+            exit(1);
+        }
+
         if (response instanceof OtpErlangTuple) {
             boards = (OtpErlangTuple)response;
             for (int i=0;i<boards.arity();i++){
@@ -48,6 +58,32 @@ public class MessageManager {
             }
         }
         return board_list;
+    }
+
+    /**
+     * This function send a generic message to the primary and wait for a response.
+     * If no response is received then the primary will be deemed as "not reachable" and
+     * rabbitmq will be used to fetch the PID of the new primary.
+     * @param obj: Erlang object to send to the primary
+     * @return : generic erlang object received from the primary
+     */
+    private OtpErlangObject sendAndWaitForResponse(OtpErlangObject obj) {
+        System.out.println("send message: "+  obj.toString() +"   to " + primaryPid.toString());
+        OtpErlangObject response = null;
+        while(response == null){
+            this.mbox.send(primaryPid, obj);
+            try {
+                response = this.mbox.receive(2000);
+                if(response == null){
+                    System.out.println("Probably the primary is down... Fetching new primary info");
+                    this.primaryPid = RabbitMQManager.fetchPrimary();
+                }
+            } catch (OtpErlangExit | OtpErlangDecodeException e) {
+                e.printStackTrace();
+            }
+        }
+        System.out.println("received response");
+        return response;
     }
 
     public UpdatePackage loadTasks(String board) throws OtpErlangExit, OtpErlangDecodeException {
