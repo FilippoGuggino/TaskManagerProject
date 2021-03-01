@@ -53,17 +53,6 @@ public class RabbitMQManager {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-
-
-
-
-        MessageManager man = new MessageManager();
-        try {
-            man.loadBoards();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     public synchronized static void createBinding(String boardTitle) {
