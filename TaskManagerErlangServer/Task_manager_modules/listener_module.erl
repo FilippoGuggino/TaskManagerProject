@@ -222,6 +222,15 @@ db_manager_loop(From, Operation, Param, Primary_info, List_of_hosts, Listener_pr
           create_tasks ->
                odbc:start(),
                {ok, Ref_to_db} = odbc:connect("dsn=test_;server=localhost;database=TaskOrganizer;user=root;", []),
+               odbc:param_query(Ref_to_db, "UPDATE tasks SET stage_id=?, last_update_time=? WHERE task_id=?",
+                    [{sql_integer,
+                         isolate_element(Params, 4)},
+                         {{sql_varchar, 255},
+                              isolate_element(Params, 5)},
+                         {sql_integer,
+                              isolate_element(Params, 1)}
+                    ]),
+
                odbc:param_query(Ref_to_db, "INSERT INTO tasks (task_id, task_description, expiration_date, stage_id, last_update_time) VALUES (?, ?, ?, ?, ?)",
                     [{sql_integer,
                          isolate_element(Params, 1)},
@@ -234,15 +243,15 @@ db_manager_loop(From, Operation, Param, Primary_info, List_of_hosts, Listener_pr
                          {{sql_varchar, 255},
                               isolate_element(Params, 5)}
                     ]),
-               io:format("SYNC: create_tasks query ok~n"),
-               odbc:param_query(Ref_to_db, "UPDATE tasks SET stage_id=?, last_update_time=? WHERE task_id=?",
-                    [{sql_integer,
-                         isolate_element(Params, 4)},
-                         {{sql_varchar, 255},
-                              isolate_element(Params, 5)},
-                         {sql_integer,
-                              isolate_element(Params, 1)}
-                    ]),
+               %io:format("SYNC: create_tasks query ok~n"),
+               %odbc:param_query(Ref_to_db, "UPDATE tasks SET stage_id=?, last_update_time=? WHERE task_id=?",
+               %     [{sql_integer,
+               %          isolate_element(Params, 4)},
+               %          {{sql_varchar, 255},
+               %               isolate_element(Params, 5)},
+               %          {sql_integer,
+               %               isolate_element(Params, 1)}
+               %     ]),
                io:format("SYNC: create_tasks query ok~n"),
                broadcast_or_ack(From, Operation, Params, Primary_info, List_of_hosts, Listener_process_id),
                odbc:disconnect(Ref_to_db);

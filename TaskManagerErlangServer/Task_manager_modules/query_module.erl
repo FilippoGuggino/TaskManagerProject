@@ -28,23 +28,26 @@ insert_host_recovery(Host_pid, Params) ->
 create_board_db(Params) ->
   {ok,Ref_to_db} = odbc:connect("dsn=test_;server=localhost;database=TaskOrganizer;user=root;", []),
   %CREATE BOARDS
-  odbc:param_query(Ref_to_db, "INSERT INTO boards (board_title, last_update_time) VALUES (?,?)",
+  {Info, _} = odbc:param_query(Ref_to_db, "INSERT INTO boards (board_title, last_update_time) VALUES (?,?)",
     [{{sql_varchar, 255},
       [element(2, Params)]},
       {{sql_varchar, 255},
         [element(1, Params)]}
     ]),
-  %CREATE ASSOCIATE STAGES
-  List_of_stages = ["BACKLOG", "DOING", "QUALITY CHECK","DONE"],
-  odbc:param_query(Ref_to_db, "INSERT INTO stages (stage_title, board_title, last_update_time) VALUES (?, ?, ?)",
-    [{{sql_varchar, 255},
-      List_of_stages},
-      {{sql_varchar, 255},
-        [element(2, Params) ||  X <- List_of_stages]},
-      {{sql_varchar, 255},
-        [element(1, Params) ||  X <- List_of_stages]}
-    ]),
-  io:format("create_board query ok~n"),
+  if
+    Info /= error ->
+      %CREATE ASSOCIATE STAGES
+      List_of_stages = ["BACKLOG", "DOING", "QUALITY CHECK","DONE"],
+      odbc:param_query(Ref_to_db, "INSERT INTO stages (stage_title, board_title, last_update_time) VALUES (?, ?, ?)",
+        [{{sql_varchar, 255},
+          List_of_stages},
+          {{sql_varchar, 255},
+            [element(2, Params) ||  X <- List_of_stages]},
+          {{sql_varchar, 255},
+            [element(1, Params) ||  X <- List_of_stages]}
+        ]),
+      io:format("DB INFO: create_board query ok~n")
+  end,
   odbc:disconnect(Ref_to_db).
 
 create_task_db(Params)->
@@ -59,7 +62,7 @@ create_task_db(Params)->
       {{sql_varchar, 255},
         [element(1, Params)]}
     ]),
-  io:format("create_task query ok~n"),
+  io:format("DB INFO: create_task query ok~n"),
   odbc:disconnect(Ref_to_db).
 
 load_boards_db() ->
@@ -89,7 +92,7 @@ update_task_db(Params) ->
       {sql_integer,
         [element(3, Params)]}
     ]),
-  io:format("update_task query ok~n"),
+  io:format("DB INFO: update_task query ok~n"),
   odbc:disconnect(Ref_to_db).
 
 load_boards_recovery(Time) ->

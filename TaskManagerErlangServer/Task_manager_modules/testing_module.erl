@@ -28,7 +28,16 @@ start() ->
   %PID_primay = spawn(listener_module,listener_loop,[[PID_secondary]]),
   %spawn(?MODULE,client_test, "A", [[PID_primay]]).
   odbc:start(),
-  query_module:load_boards_recovery("0").
+  Params = {"0", "A"},
+  {ok,Ref_to_db} = odbc:connect("dsn=test_;server=localhost;database=TaskOrganizer;user=root;", []),
+  %CREATE BOARDS
+  {Info, Num} = odbc:param_query(Ref_to_db, "INSERT INTO boards (board_title, last_update_time) VALUES (?,?)",
+    [{{sql_varchar, 255},
+      [element(2, Params)]},
+      {{sql_varchar, 255},
+        [element(1, Params)]}
+    ]),
+  Info.
   %Magi = ["A", "B", "C"],
   %call_me(Magi).
 
