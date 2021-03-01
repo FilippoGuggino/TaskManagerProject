@@ -287,7 +287,7 @@ receive_acks(Params, List_of_hosts) ->
                if Params =:= Params_received ->
                     io:format("Primary: ACK received~n"),
                     %Delete the host who responded from the list of hosts -> PID OF LISTENER LOOP
-                    Remaining_list_of_hosts = delete(Remote_ID, [List_of_hosts]),
+                    Remaining_list_of_hosts = delete(Remote_ID, List_of_hosts),
                     %DELETE THIS BELOW
                     %Remaining_list_of_hosts = List_of_hosts,
                     %io:format("~w~n", [Remote_ID]),
