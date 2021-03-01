@@ -5,8 +5,8 @@ test-node1:
 	docker start mysql1 || true
 	
 	docker exec -ti mysql1 /bin/sh -c 'kill -9 $$(pgrep erl_child_setup) || true'
-	docker exec -ti mysql1 rm -rf /TaskManagerErlangServer
-	docker cp ../TaskManagerErlangServer mysql1:/
+	docker exec -ti mysql1 rm -rf /TaskManagerErlangServer/Task_manager_modules
+	docker cp ../TaskManagerErlangServer/Task_manager_modules mysql1:/TaskManagerErlangServer/
 	
 	docker exec -ti -w /TaskManagerErlangServer mysql1 rebar3 compile
 	
@@ -22,8 +22,9 @@ test-node2:
 	docker start mysql2 || true
 
 	docker exec -ti mysql2 /bin/sh -c 'kill -9 $$(pgrep erl_child_setup) || true'
-	docker exec -ti mysql2 rm -rf /TaskManagerErlangServer
-	docker cp ../TaskManagerErlangServer mysql2:/
+	docker exec -ti mysql2 rm -rf /TaskManagerErlangServer/Task_manager_modules
+	docker cp ../TaskManagerErlangServer/Task_manager_modules mysql2:/TaskManagerErlangServer/
+	docker cp ../TaskManagerErlangServer/rebar.config mysql2:/TaskManagerErlangServer/
 
 	docker exec -ti -w /TaskManagerErlangServer mysql2 rebar3 compile
 

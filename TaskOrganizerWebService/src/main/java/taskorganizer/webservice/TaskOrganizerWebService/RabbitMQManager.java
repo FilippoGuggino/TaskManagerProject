@@ -43,6 +43,13 @@ public class RabbitMQManager {
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
             String message = new String(delivery.getBody(), "UTF-8");
             System.out.println(" [x] Received '" + message + "'");
+
+            OtpInputStream otpIn = new OtpInputStream(delivery.getBody());
+            try {
+                UserBoardConcurrentHashmap.updateClients(otpIn.read_any());
+            } catch (OtpErlangDecodeException e) {
+                e.printStackTrace();
+            }
         };
 
         try {
@@ -53,7 +60,40 @@ public class RabbitMQManager {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        MessageManager man = new MessageManager();
+        try {
+            man.test();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
+
+
+    /*
+    * DeliverCallback deliverCallback = (consumerTag, delivery) -> {
+            String message = new String(delivery.getBody(), "UTF-8");
+            OtpInputStream mess = new OtpInputStream(delivery.getBody());
+            OtpNode webserver;
+            OtpMbox mbox;
+            try {
+                OtpErlangPid pid = mess.read_pid();
+                System.out.println(" [x] Received '" + pid.toString() + "'");
+
+                webserver = new OtpNode("webservice@172.18.0.2", "test");
+                mbox = webserver.createMbox("webserver");
+                // TODO i don't think this is needed
+                mbox.registerName("webserver");
+                OtpErlangObject[] msg = new OtpErlangObject[2];
+                msg[0] = new OtpErlangAtom("election_vote");
+                msg[1] = mbox.self();
+                OtpErlangTuple formatted_msg = new OtpErlangTuple(msg);
+                System.out.println("tuple: " + formatted_msg.toString());
+                mbox.send(pid, formatted_msg);
+            } catch (OtpErlangDecodeException e) {
+                e.printStackTrace();
+            }
+        };*/
 
     public synchronized static void createBinding(String boardTitle) {
         try {

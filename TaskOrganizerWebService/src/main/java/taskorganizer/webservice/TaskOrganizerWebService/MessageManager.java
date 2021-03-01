@@ -60,6 +60,29 @@ public class MessageManager {
         return board_list;
     }
 
+    public void test(){
+        OtpErlangObject[] msg = new OtpErlangObject[2];
+        msg[0] = new OtpErlangAtom("test");
+        msg[1] = mbox.self();
+        OtpErlangTuple formatted_msg = new OtpErlangTuple(msg);
+
+        OtpErlangObject response = sendAndWaitForResponse(formatted_msg);
+        OtpErlangTuple boards = null;
+
+        if (response instanceof OtpErlangTuple) {
+            boards = (OtpErlangTuple)response;
+            OtpErlangAtom op = (OtpErlangAtom) boards.elementAt(0);
+            System.out.println("atom: " + op.toString());
+
+            OtpErlangList list = (OtpErlangList) boards.elementAt(1);
+            System.out.println("list: " + list.toString());
+
+            OtpErlangPid pid = (OtpErlangPid) boards.elementAt(2);
+            System.out.println("pid: " + pid.toString());
+        }
+
+    }
+
     /**
      * This function send a generic message to the primary and wait for a response.
      * If no response is received then the primary will be deemed as "not reachable" and

@@ -21,6 +21,14 @@
 listener_loop([List_of_hosts], Server_type, Sent_heartbeat, Election_ready) ->
      io:format("~p: List of hosts inside the cluster: ~p~n", [self(), List_of_hosts]),
      receive
+          {test, From} ->
+               io:format("received test message!"),
+               New_server_type = Server_type,
+               Updated_list_of_hosts = List_of_hosts,
+               New_sent_heartbeat = false,
+               New_election_ready = Election_ready,
+               From ! {ack_test, ["ciao", "bel", "bambino"], self()};
+          
           {election_vote, From} ->
                From ! {ack_election_vote, self()},
                New_server_type = Server_type,
@@ -264,6 +272,7 @@ db_manager_loop(From, Operation, Param, Primary_info, [List_of_hosts], Listener_
 
           update_task ->
                update_task_db(Params);
+               % TODO send 'ack_update_task' back + send same ack message to rabbitmq
 
 
           %TODO: Define new Message to get data

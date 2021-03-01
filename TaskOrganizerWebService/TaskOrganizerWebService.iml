@@ -42,5 +42,6 @@
     <orderEntry type="library" name="Maven: com.rabbitmq:amqp-client:5.10.0" level="project" />
     <orderEntry type="library" name="Maven: org.slf4j:slf4j-api:1.7.30" level="project" />
     <orderEntry type="library" name="Maven: clojang:erlang-jinterface:1.10-1" level="project" />
+    <orderEntry type="library" name="Maven: org.json:json:20201115" level="project" />
   </component>
 </module>

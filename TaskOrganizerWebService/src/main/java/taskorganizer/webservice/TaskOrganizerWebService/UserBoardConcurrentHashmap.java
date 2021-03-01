@@ -1,10 +1,19 @@
 package taskorganizer.webservice.TaskOrganizerWebService;
 
+import com.ericsson.otp.erlang.*;
+import org.json.JSONObject;
+
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.bind.JsonbBuilder;
 import javax.websocket.Session;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static java.lang.System.exit;
 
 public class UserBoardConcurrentHashmap {
     // Key: board_title, Value: websocket sessions of users interested in that board
@@ -70,5 +79,36 @@ public class UserBoardConcurrentHashmap {
 
     public static String printString(){
         return userBoards.toString();
+    }
+
+    public static void updateClients(OtpErlangObject update){
+        if (update instanceof OtpErlangTuple) {
+            OtpErlangTuple tuple = (OtpErlangTuple) update;
+            System.out.println("complete tuple: " + tuple);
+
+            OtpErlangAtom op = (OtpErlangAtom) tuple.elementAt(0);
+            // Check if correct message structure has been received
+            if (op.atomValue().equals("ack_update_task")) {
+                OtpErlangString boardTitle = (OtpErlangString) tuple.elementAt(1);
+                ArrayList<Session> tmp = userBoards.get(boardTitle.toString());
+
+                // TODO get true parameters from message
+                String payload = new JSONObject()
+                        .put("task_title", "ciao")
+                        .put("destStage", "ciao")
+                        .toString();
+
+                try {
+                    for(Session session: tmp){
+                            session.getBasicRemote().sendText(payload);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }else{
+            System.out.println("Wrong message structure received from rabbitmq");
+            exit(1);
+        }
     }
 }
