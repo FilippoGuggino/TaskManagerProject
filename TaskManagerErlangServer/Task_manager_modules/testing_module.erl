@@ -1,6 +1,7 @@
 -module(testing_module).
 -import(query_module,[create_board_db/1]).
 - import(listener_module,[listener_loop/4]).
+- import(utility_module,[isolate_element/2]).
 %% API
 -export([board_test/0, get_boards/0, load_tasks/0, client_test/2, start/0, call_me/1]).
 
@@ -28,18 +29,32 @@ start() ->
   %PID_primay = spawn(listener_module,listener_loop,[[PID_secondary]]),
   %spawn(?MODULE,client_test, "A", [[PID_primay]]).
   odbc:start(),
-  Params = {"0", "A"},
-  {ok,Ref_to_db} = odbc:connect("dsn=test_;server=localhost;database=TaskOrganizer;user=root;", []),
-  %CREATE BOARDS
-  {Info, Num} = odbc:param_query(Ref_to_db, "INSERT INTO boards (board_title, last_update_time) VALUES (?,?)",
-    [{{sql_varchar, 255},
-      [element(2, Params)]},
+  %Params = {"0", "C"},
+  Params = [{ 1, "OCCHI DI DATTOO AHDSADHJASD","2021-10-10", 1062, "50000"}],
+  %query_module:update_task_db(Params),
+  odbc:start(),
+  {ok, Ref_to_db} = odbc:connect("dsn=test_;server=localhost;database=TaskOrganizer;user=root;", []),
+  odbc:param_query(Ref_to_db, "UPDATE tasks SET stage_id=?, last_update_time=? WHERE task_id=?",
+    [{sql_integer,
+      isolate_element(Params, 4)},
       {{sql_varchar, 255},
-        [element(1, Params)]}
+        isolate_element(Params, 5)},
+      {sql_integer,
+        isolate_element(Params, 1)}
     ]),
-  Info.
-  %Magi = ["A", "B", "C"],
-  %call_me(Magi).
+
+  odbc:param_query(Ref_to_db, "INSERT INTO tasks (task_id, task_description, expiration_date, stage_id, last_update_time) VALUES (?, ?, ?, ?, ?)",
+    [{sql_integer,
+      isolate_element(Params, 1)},
+      {{sql_varchar, 255},
+        isolate_element(Params, 2)},
+      {{sql_varchar, 20},
+        isolate_element(Params, 3)},
+      {sql_integer,
+        isolate_element(Params, 4)},
+      {{sql_varchar, 255},
+        isolate_element(Params, 5)}
+    ]).
 
 call_me(List) ->
   List.

@@ -46,7 +46,9 @@ create_board_db(Params) ->
           {{sql_varchar, 255},
             [element(1, Params) ||  X <- List_of_stages]}
         ]),
-      io:format("DB INFO: create_board query ok~n")
+      io:format("DB INFO: create_board query ok~n");
+  true ->
+      io:format("DB INFO: This table already exists ~n")
   end,
   odbc:disconnect(Ref_to_db).
 
