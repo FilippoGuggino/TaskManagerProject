@@ -7,6 +7,7 @@
 --%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <html>
+<link rel="stylesheet" href="css/welcome.css">
 <head>
     <title>Task Organizer Welcome Page</title>
 
@@ -16,24 +17,26 @@
 <%  ArrayList<String> board_list = (ArrayList<String>) request.getAttribute("board_list");
 %>
 
-<h1>Task Organizer Welcome Page</h1>
+<h1 id="title_1">Task</h1>
+<h1 id="title_2"> Organizer</h1>
 
-<p>Select a board from the menu list</p>
-
-<form action="Board">
-    <label for="selectBoard">Choose a board</label>
-    <select name="selectBoard" id="selectBoard">
-        <%
-            if (!board_list.isEmpty()) {
-                for (int i = 0; i < board_list.size(); i++) {
-                    out.println("<option value=" + board_list.get(i) + ">" + board_list.get(i) + "</option>");
+<div id="selector_div">
+    <p>Start organizing your workflow!</p>
+    <form action="Board" id="selector">
+        <label for="selectBoard">Choose a board: </label>
+        <select name="selectBoard" id="selectBoard">
+            <%
+                if (!board_list.isEmpty()) {
+                    for (int i = 0; i < board_list.size(); i++) {
+                        out.println("<option value=" + board_list.get(i) + ">" + board_list.get(i) + "</option>");
+                    }
                 }
-            }
-        %>
-    </select>
-    <br><br>
-    <input type="submit" value="Submit">
-</form>
+            %>
+        </select>
+        <br><br>
+        <input id ="submit_button" type="submit" value="Submit">
+    </form>
+</div>
 
 </body>
 </html>

@@ -1,0 +1,98 @@
+@import url('https://fonts.googleapis.com/css?family=Proxima+Nova');
+body {
+    -ms-overflow-style: scrollbar;
+    font-family: "Proxima Nova";
+}
+
+@media screen and (max-width: 480px) {
+    html, body {
+        min-width: 320px; } }
+html {
+    box-sizing: border-box; }
+
+*, *:before, *:after {
+    box-sizing: inherit; }
+
+body.is-preload *, body.is-preload *:before, body.is-preload *:after {
+    -moz-animation: none !important;
+    -webkit-animation: none !important;
+    -ms-animation: none !important;
+    animation: none !important;
+    -moz-transition: none !important;
+    -webkit-transition: none !important;
+    -ms-transition: none !important;
+    transition: none !important; }
+
+body, input, select, textarea {
+    font-size: 30px;
+    color: #FFF;
+}
+
+#selector_div{
+    margin: auto;
+    width: 50%;
+    border-style: solid;
+    border-color: #1DB954;
+    border-radius: 30px;
+    text-align: center;
+}
+
+form {
+
+    display: inline-block;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-size: 20px;
+    font-family: "Proxima Nova";}
+
+html {
+    font-family: "Proxima Nova";
+    font-weight: lighter;
+    background-color: #373737;
+    color: #999;
+}
+
+#title_1{
+    font-size: 40px;
+    color:white;
+    padding-left: 50px;
+    display:inline-block;
+}
+#title_2 {
+    font-size: 40px;
+    color: #1DB954;
+    display:inline-block;
+
+}
+
+#submit_button{
+    display:inline-block;
+
+    font-family: "Proxima Nova";
+    text-decoration:none;
+    font-size: 20px;
+
+    color:#1DB954;
+    background-color:transparent;
+    border:1px solid #1DB954;
+    border-radius:100px;
+
+    padding: .3em 1.2em;
+    margin:5px;
+
+    background-size: 200% 100%;
+    background-image: linear-gradient(to right, transparent 50%, #1DB954 50%);
+    transition: background-position .3s cubic-bezier(0.19, 1, 0.22, 1) .1s, color .5s ease 0s, background-color .5s ease;
+}
+
+#submit_button:hover{
+    color:rgba(255, 255, 255, 1);
+    background-color: #1DB954;
+    background-position: -100% 100%;
+}
+
+#selectBoard{
+    border-radius:100px;
+    width: 300px;
+}
