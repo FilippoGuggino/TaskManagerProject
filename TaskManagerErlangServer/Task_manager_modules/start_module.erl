@@ -15,11 +15,16 @@ start_localhost() ->
 start() ->
      io:format("Starting~n"),
      PID_primary = spawn('erlang-server@172.18.0.162', start_module, init, [[], primary]),
+     %unregister(listener_loop_process),
 %%  timer:sleep(1000),
 %%
 %%  %Spawn multiple secondary nodes
      PID_secondary = spawn('erlang-server@172.18.0.163', start_module, init, [[PID_primary], secondary]),
-     timer:sleep(2000),
+     %timer:sleep(30000),
+     %io:format("----------------- SECONDARY DOWN ------------------~n"),
+     %exit(PID_secondary, testing_election),
+
+     timer:sleep(10000),
 %%  PID_secondary3 = spawn(?MODULE, init, [[PID_primary], secondary]),
 %%  timer:sleep(1000),
 %%  PID_secondary2 = spawn(?MODULE, init, [[PID_primary], secondary]),
@@ -27,8 +32,14 @@ start() ->
 %%  PID_secondary4 = spawn(?MODULE, init, [[PID_primary], secondary]),
 %%  % register(primary_process, PID_primary),
 %%  timer:sleep(2000),
-%% testing_module:client_test("A", PID_primary).
-     exit(PID_primary, testing_election).
+	io:format("----------------- TESTING HOST FAILURE ------------------~n"),
+	exit(PID_secondary, testing_election),
+	testing_module:client_test("A", PID_primary),
+	timer:sleep(50000),
+	io:format("------------------- SECONDARY IS UP ------------------~n"),
+	spawn('erlang-server@172.18.0.163', start_module, init, [[PID_primary], secondary]).
+	%spawn('erlang-server@172.18.0.163', start_module, init, [[PID_primary], secondary]).
+%%     exit(PID_primary, testing_election).
 % spawn(?MODULE, client_test, ["Ciao", PID_primary]).
 
 
@@ -41,6 +52,7 @@ init(List_of_hosts, Server_type) ->
      case Server_type of
           % This host is the primary
           primary ->
+          	   register(listener_loop_process, self()),
                io:format("~p: sono il primario~n", [self()]),
                % Start connection with RabbitMQ
                application:ensure_started(amqp_client),

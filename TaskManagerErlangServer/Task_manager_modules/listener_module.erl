@@ -1,7 +1,7 @@
 -module(listener_module).
 
 -import(lists, [delete/2]).
--import(query_module, [check_host_recovery_regisered/1, insert_host_recovery/2, create_board_db/1, create_task_db/1, load_boards_db/0, load_tasks_db/1, update_task_db/1]).
+-import(query_module, [create_task_recovery/1, check_host_recovery_regisered/1, insert_host_recovery/2, create_board_db/1, create_task_db/1, load_boards_db/0, load_tasks_db/1, update_task_db/1]).
 -import(election_module, [election_handler/1]).
 -import(recover_node_module, [host_register_recovery/2, recovery_routine/2]).
 -import(utility_module, [isolate_element/2, delete_hosts_from_list/2, get_timestamp_a/0]).
@@ -97,10 +97,10 @@ listener_loop([List_of_hosts], Server_type, Sent_heartbeat, Election_ready) ->
                case Operation of
                     hosts_to_delete ->
                          io:format("Listener_loop: Host delete request recived~n"),
-                         io:format(List_of_hosts),
+                         %io:format(List_of_hosts),
                          Updated_list_of_hosts = delete_hosts_from_list(List_of_hosts, Params),
-                         io:format("Updated list ~n"),
-                         io:format(Updated_list_of_hosts);
+                         io:format("Updated list ~n");
+                         %io:format(Updated_list_of_hosts);
                     update_list ->
                          io:format("~p: Updating list of hosts: ~p ~n", [self(), [From] ++ Params]),
                          Updated_list_of_hosts = [From] ++ Params;
@@ -166,6 +166,15 @@ create_multiple_boards([H_title|T_title],[H_time|T_time]) ->
      create_board_db({H_time,H_title}),
      create_multiple_boards(T_title, T_time).
 
+create_multilpe_tasks([])->
+     tesks_ok;
+create_multilpe_tasks([H | T])->
+     create_task_recovery(H),
+     create_multilpe_tasks(T).
+
+get_head([H | _]) ->
+     H.
+
 broadcast_or_ack(From, Operation, Params, Primary_info, List_of_hosts, Listener_process_id) ->
      case Primary_info of
           primary ->
@@ -220,29 +229,34 @@ db_manager_loop(From, Operation, Param, Primary_info, List_of_hosts, Listener_pr
                broadcast_or_ack(From, Operation, Params, Primary_info, List_of_hosts, Listener_process_id);
 
           create_tasks ->
-               odbc:start(),
-               {ok, Ref_to_db} = odbc:connect("dsn=test_;server=localhost;database=TaskOrganizer;user=root;", []),
-               odbc:param_query(Ref_to_db, "UPDATE tasks SET stage_id=?, last_update_time=? WHERE task_id=?",
-                    [{sql_integer,
-                         isolate_element(Params, 4)},
-                         {{sql_varchar, 255},
-                              isolate_element(Params, 5)},
-                         {sql_integer,
-                              isolate_element(Params, 1)}
-                    ]),
-
-               odbc:param_query(Ref_to_db, "INSERT INTO tasks (task_id, task_description, expiration_date, stage_id, last_update_time) VALUES (?, ?, ?, ?, ?)",
-                    [{sql_integer,
-                         isolate_element(Params, 1)},
-                         {{sql_varchar, 255},
-                              isolate_element(Params, 2)},
-                         {{sql_varchar, 20},
-                              isolate_element(Params, 3)},
-                         {sql_integer,
-                              isolate_element(Params, 4)},
-                         {{sql_varchar, 255},
-                              isolate_element(Params, 5)}
-                    ]),
+               %odbc:start(),
+               %{ok,Ref_to_db} = odbc:connect("dsn=test_;server=localhost;database=TaskOrganizer;user=root;", []),
+               %{ok, Ref_to_db} = odbc:connect("dsn=test_;server=localhost;database=TaskOrganizer;user=root;", []),
+               %{update, _} = odbc:param_query(Ref_to_db, "UPDATE tasks SET stage_id=?, last_update_time=? WHERE task_id=?",
+               %     [{sql_integer,
+               %          isolate_element(Params, 4)},
+               %          {{sql_varchar, 255},
+               %               isolate_element(Params, 5)},
+               %          {sql_integer,
+               %               isolate_element(Params, 1)}
+               %     ]),
+               %io:format("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA~n"),
+               %Params2 = [{100,"RECVOERY QUERY","2020-01-01",4,"111"}, {121,"XXX","2020-01-01",4,"ZZZ"}],
+               %io:format("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXx ~p ~n", [isolate_element(Params2,1)]),
+               %Params2 = Params,
+               create_multilpe_tasks(Params),
+               %{updated, _} = odbc:param_query(Ref_to_db, "INSERT INTO tasks (task_id, task_description, expiration_date, stage_id, last_update_time) VALUES (?, ?, ?, ?, ?)",
+               %     [{sql_integer,
+               %          isolate_element(Params2, 1)},
+               %          {{sql_varchar, 255},
+               %               isolate_element(Params2, 2)},
+               %          {{sql_varchar, 20},
+               %               isolate_element(Params2, 3)},
+               %          {sql_integer,
+               %               isolate_element(Params2, 4)},
+               %          {{sql_varchar, 255},
+               %               isolate_element(Params2, 5)}
+               %     ]),
                %io:format("SYNC: create_tasks query ok~n"),
                %odbc:param_query(Ref_to_db, "UPDATE tasks SET stage_id=?, last_update_time=? WHERE task_id=?",
                %     [{sql_integer,
@@ -253,8 +267,8 @@ db_manager_loop(From, Operation, Param, Primary_info, List_of_hosts, Listener_pr
                %               isolate_element(Params, 1)}
                %     ]),
                io:format("SYNC: create_tasks query ok~n"),
-               broadcast_or_ack(From, Operation, Params, Primary_info, List_of_hosts, Listener_process_id),
-               odbc:disconnect(Ref_to_db);
+               broadcast_or_ack(From, Operation, Params, Primary_info, List_of_hosts, Listener_process_id);
+               %odbc:disconnect(Ref_to_db);
 
           update_task ->
                update_task_db(Params);
@@ -297,8 +311,8 @@ receive_acks(Params, List_of_hosts) ->
                end
      after 10000 ->
           io:format("Entered host recovery routine ~n"),
-          host_register_recovery([List_of_hosts], Params),
-          whereis(listener_loop_process) ! {hosts_to_delete, {List_of_hosts}, primary, self()},
+          host_register_recovery(List_of_hosts, Params),
+          whereis(listener_loop_process) ! {hosts_to_delete, List_of_hosts, primary, self()},
           %SEND the response to client after recovery data are stored
           receive_acks(Params, [])
      end.

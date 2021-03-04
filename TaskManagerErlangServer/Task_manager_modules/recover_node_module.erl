@@ -24,7 +24,9 @@ host_register_recovery([H|T], Params) ->
   %MUST BE THE SAME ONE AS THE QUERY INSERT TIME
     Data == [] ->
       io:format("~p", [node(H)]),
-      insert_host_recovery(H, Params)
+      insert_host_recovery(H, Params);
+    true ->
+      ok
   end,
   host_register_recovery(T, Params).
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
