@@ -23,7 +23,7 @@ body.is-preload *, body.is-preload *:before, body.is-preload *:after {
     -ms-transition: none !important;
     transition: none !important; }
 
-body, input, select, textarea {
+body, input, textarea {
     font-size: 30px;
     color: #FFF;
 }
@@ -95,4 +95,10 @@ html {
 #selectBoard{
     border-radius:100px;
     width: 300px;
+}
+select {
+    padding: 5px;
+    text-align: center;
+    font-size: 30px;
+    color: black;
 }
