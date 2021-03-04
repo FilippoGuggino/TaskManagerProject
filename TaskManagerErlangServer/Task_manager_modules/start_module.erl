@@ -18,7 +18,7 @@ start() ->
 %%  timer:sleep(1000),
 %%
 %%  %Spawn multiple secondary nodes
-     PID_secondary = spawn('erlang-server@172.18.0.163', start_module, init, [[PID_primary], secondary]).
+     PID_secondary = spawn('erlang-server@172.18.0.163', start_module, init, [[PID_primary], secondary]),
 %%  PID_secondary3 = spawn(?MODULE, init, [[PID_primary], secondary]),
 %%  timer:sleep(1000),
 %%  PID_secondary2 = spawn(?MODULE, init, [[PID_primary], secondary]),
@@ -26,8 +26,14 @@ start() ->
 %%  PID_secondary4 = spawn(?MODULE, init, [[PID_primary], secondary]),
 %%  % register(primary_process, PID_primary),
 %%  timer:sleep(2000),
-%% testing_module:client_test("A", PID_primary).
-%% %exit(PID_primary, testing_election).
+	io:format("----------------- TESTING HOST FAILURE ------------------~n"),
+	exit(PID_secondary, testing_election),
+	testing_module:client_test("A", PID_primary),
+	timer:sleep(50000),
+	io:format("------------------- SECONDARY IS UP ------------------~n"),
+	spawn('erlang-server@172.18.0.163', start_module, init, [[PID_primary], secondary]).
+	%spawn('erlang-server@172.18.0.163', start_module, init, [[PID_primary], secondary]).
+%%     exit(PID_primary, testing_election).
 % spawn(?MODULE, client_test, ["Ciao", PID_primary]).
 
 
@@ -40,6 +46,7 @@ init(List_of_hosts, Server_type) ->
      case Server_type of
           % This host is the primary
           primary ->
+          	   register(listener_loop_process, self()),
                io:format("~p: sono il primario~n", [self()]),
                init_rabbitmq(),
                listener_loop([[]], primary, false, true);
@@ -68,7 +75,7 @@ init_rabbitmq() ->
      application:ensure_started(amqp_client),
      {ok, Connection} = amqp_connection:start(#amqp_params_network{host = "172.18.0.160"}),
      {ok, Channel} = amqp_connection:open_channel(Connection),
-     
+
      Primary_queue_name = <<"primary_queue">>,
      Exchange_name = <<"topics_boards">>,
      % Create new Exchange, used to dispatch updates to "interested" clients
@@ -88,10 +95,10 @@ init_rabbitmq() ->
      #'queue.bind_ok'{} = amqp_channel:call(Channel, Binding),
      
      Payload = term_to_binary(self()),
-     
+
      Publish = #'basic.publish'{exchange = Exchange_name, routing_key = Routing_key},
      amqp_channel:cast(Channel, Publish, #amqp_msg{payload = Payload}),
-     
+
      %% Close the channel
      amqp_channel:close(Channel),
      %% Close the connection

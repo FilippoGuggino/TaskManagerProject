@@ -1,7 +1,7 @@
 -module(listener_module).
 
 -import(lists, [delete/2]).
--import(query_module, [check_host_recovery_regisered/1, insert_host_recovery/2, create_board_db/1, create_task_db/1, load_boards_db/0, load_tasks_db/1, update_task_db/1]).
+-import(query_module, [create_task_recovery/1, check_host_recovery_regisered/1, insert_host_recovery/2, create_board_db/1, create_task_db/1, load_boards_db/0, load_tasks_db/1, update_task_db/1]).
 -import(election_module, [election_handler/1]).
 -import(recover_node_module, [host_register_recovery/2, recovery_routine/2]).
 -import(utility_module, [isolate_element/2, delete_hosts_from_list/2, get_timestamp_a/0]).
@@ -96,12 +96,11 @@ listener_loop([List_of_hosts], Server_type, Sent_heartbeat, Election_ready) ->
                New_server_type = Server_type,
                % remove empty lists using list comprehension
                Updated_list_of_hosts = List_of_hosts ++ [From],
-     
+
                From ! {ack_new_server_up, Updated_list_of_hosts, self()},
-               
+
                %Send to all the other servers active the new host that joined
                server_up_message(Updated_list_of_hosts, List_of_hosts),
-               
                %Recovery Host routine - send it all the data
                recovery_routine(From, List_of_hosts),
                New_election_ready = Election_ready;
@@ -131,17 +130,17 @@ listener_loop([List_of_hosts], Server_type, Sent_heartbeat, Election_ready) ->
                case Operation of
                     hosts_to_delete ->
                          io:format("Listener_loop: Host delete request recived~n"),
-                         io:format(List_of_hosts),
+                         %io:format(List_of_hosts),
                          Updated_list_of_hosts = delete_hosts_from_list(List_of_hosts, Params),
-                         io:format("Updated list ~n"),
-                         io:format(Updated_list_of_hosts);
+                         io:format("Updated list ~n");
+                         %io:format(Updated_list_of_hosts);
                     update_list ->
                          io:format("~p: Updating list of hosts: ~p ~n", [self(), [From] ++ Params]),
                          Updated_list_of_hosts = [From] ++ Params;
                     _ ->
                          Updated_list_of_hosts = List_of_hosts,
                          %take care of the request if not an host update
-                         spawn(?MODULE, db_manager_loop, [From, Operation, Params, Primary_info, [List_of_hosts], self()])
+                         spawn(?MODULE, db_manager_loop, [From, Operation, Params, Primary_info, List_of_hosts, self()])
                end;
           _ ->
                io:format("~p: received undefined message ~n", [self()]),
@@ -194,6 +193,34 @@ listener_loop([List_of_hosts], Server_type, Sent_heartbeat, Election_ready) ->
      listener_loop([Updated_list_of_hosts], New_server_type, New_sent_heartbeat, New_election_ready).
 
 
+create_multiple_boards([],[]) ->
+     ok;
+create_multiple_boards([H_title|T_title],[H_time|T_time]) ->
+     create_board_db({H_time,H_title}),
+     create_multiple_boards(T_title, T_time).
+
+create_multilpe_tasks([])->
+     tesks_ok;
+create_multilpe_tasks([H | T])->
+     create_task_recovery(H),
+     create_multilpe_tasks(T).
+
+get_head([H | _]) ->
+     H.
+
+broadcast_or_ack(From, Operation, Params, Primary_info, List_of_hosts, Listener_process_id) ->
+     case Primary_info of
+          primary ->
+               send_and_wait(Operation, Params, List_of_hosts, List_of_hosts);
+          %Finally send data to client ACK or informations asked
+%%               send_update_to_clients(Params),
+%%               % Reply web-server with ack
+%%               From ! {Ack_operation, Params};
+%%
+          secondary ->
+               send_ack_to_primary(From, Params, Listener_process_id)
+     end.
+
 % The db_manager_loop
 % 1- create a connection to MySQL database
 % 2- Execute the query
@@ -201,8 +228,7 @@ listener_loop([List_of_hosts], Server_type, Sent_heartbeat, Election_ready) ->
 %   + Send the data to other hosts and waits their ACK
 %    If it is a secondary
 %   + Send and ack to the primary
-db_manager_loop(From, Operation, Param, Primary_info, [List_of_hosts], Listener_process_id) ->
-     Ack_operation = undefined,
+db_manager_loop(From, Operation, Param, Primary_info, List_of_hosts, Listener_process_id) ->
      if
      %The primary must select the timestamp to be stored in the db
           Primary_info == primary ->
@@ -212,63 +238,70 @@ db_manager_loop(From, Operation, Param, Primary_info, [List_of_hosts], Listener_
      end,
 
      %io:format(Query_time),
-     odbc:start(),
-     {ok, Ref_to_db} = odbc:connect("dsn=test_;server=localhost;database=TaskOrganizer;user=root;", []),
+
      %GET CURRENT TIMESTAMP TO PASS ALL THE OTHER HOSTS
      case Operation of
           create_board ->
                io:format("ho chiamato create_board~n"),
-               create_board_db(Params);
+               create_board_db(Params),
+               broadcast_or_ack(From, Operation, Params, Primary_info, List_of_hosts, Listener_process_id);
 
           %MULTIPLE BOARDS UPDATE
           create_boards ->
                io:format("ho chiamato create_boards~n"),
-               odbc:param_query(Ref_to_db, "INSERT INTO boards (board_title, last_update_time) VALUES (?,?)",
-                    [{{sql_varchar, 255},
-                         isolate_element(Params, 1)},
-                         {{sql_varchar, 255},
-                              isolate_element(Params, 2)}
-                    ]),
-               %CREATE ASSOCIATE STAGES
-               List_of_stages = ["BACKLOG", "DOING", "QUALITY CHECK","DONE"],
-               odbc:param_query(Ref_to_db, "INSERT INTO stages (stage_title, board_title, last_update_time) VALUES (?, ?, ?)",
-                    [{{sql_varchar, 255},
-                         List_of_stages},
-                         {{sql_varchar, 255},
-                              ["A" ||  X <- List_of_stages]},
-                         {{sql_varchar, 255},
-                              ["0" ||  X <- List_of_stages]}
-                    ]),
+               List_of_boards_title = isolate_element(Params, 1),
+               List_of_last_update_time = isolate_element(Params, 2),
+               create_multiple_boards(List_of_boards_title, List_of_last_update_time),
+               broadcast_or_ack(From, Operation, Params, Primary_info, List_of_hosts, Listener_process_id),
                io:format("create_board query ok~n"),
                io:format("SYNC: create_boards query ok~n");
 
 
           create_task ->
-               create_task_db(Params);
+               create_task_db(Params),
+               broadcast_or_ack(From, Operation, Params, Primary_info, List_of_hosts, Listener_process_id);
 
           create_tasks ->
-               odbc:param_query(Ref_to_db, "INSERT INTO tasks (task_id, task_description, expiration_date, stage_id, last_update_time) VALUES (?, ?, ?, ?, ?)",
-                    [{sql_integer,
-                         isolate_element(Params, 1)},
-                         {{sql_varchar, 255},
-                              isolate_element(Params, 2)},
-                         {{sql_varchar, 20},
-                              isolate_element(Params, 3)},
-                         {sql_integer,
-                              isolate_element(Params, 4)},
-                         {{sql_varchar, 255},
-                              isolate_element(Params, 5)}
-                    ]),
+               %odbc:start(),
+               %{ok,Ref_to_db} = odbc:connect("dsn=test_;server=localhost;database=TaskOrganizer;user=root;", []),
+               %{ok, Ref_to_db} = odbc:connect("dsn=test_;server=localhost;database=TaskOrganizer;user=root;", []),
+               %{update, _} = odbc:param_query(Ref_to_db, "UPDATE tasks SET stage_id=?, last_update_time=? WHERE task_id=?",
+               %     [{sql_integer,
+               %          isolate_element(Params, 4)},
+               %          {{sql_varchar, 255},
+               %               isolate_element(Params, 5)},
+               %          {sql_integer,
+               %               isolate_element(Params, 1)}
+               %     ]),
+               %io:format("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA~n"),
+               %Params2 = [{100,"RECVOERY QUERY","2020-01-01",4,"111"}, {121,"XXX","2020-01-01",4,"ZZZ"}],
+               %io:format("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXx ~p ~n", [isolate_element(Params2,1)]),
+               %Params2 = Params,
+               create_multilpe_tasks(Params),
+               %{updated, _} = odbc:param_query(Ref_to_db, "INSERT INTO tasks (task_id, task_description, expiration_date, stage_id, last_update_time) VALUES (?, ?, ?, ?, ?)",
+               %     [{sql_integer,
+               %          isolate_element(Params2, 1)},
+               %          {{sql_varchar, 255},
+               %               isolate_element(Params2, 2)},
+               %          {{sql_varchar, 20},
+               %               isolate_element(Params2, 3)},
+               %          {sql_integer,
+               %               isolate_element(Params2, 4)},
+               %          {{sql_varchar, 255},
+               %               isolate_element(Params2, 5)}
+               %     ]),
+               %io:format("SYNC: create_tasks query ok~n"),
+               %odbc:param_query(Ref_to_db, "UPDATE tasks SET stage_id=?, last_update_time=? WHERE task_id=?",
+               %     [{sql_integer,
+               %          isolate_element(Params, 4)},
+               %          {{sql_varchar, 255},
+               %               isolate_element(Params, 5)},
+               %          {sql_integer,
+               %               isolate_element(Params, 1)}
+               %     ]),
                io:format("SYNC: create_tasks query ok~n"),
-               odbc:param_query(Ref_to_db, "UPDATE tasks SET stage_id=?, last_update_time=? WHERE task_id=?",
-                    [{sql_integer,
-                         isolate_element(Params, 4)},
-                         {{sql_varchar, 255},
-                              isolate_element(Params, 5)},
-                         {sql_integer,
-                              isolate_element(Params, 1)}
-                    ]),
-               io:format("SYNC: create_tasks query ok~n");
+               broadcast_or_ack(From, Operation, Params, Primary_info, List_of_hosts, Listener_process_id);
+               %odbc:disconnect(Ref_to_db);
 
           update_task ->
                update_task_db(Params);
@@ -286,19 +319,8 @@ db_manager_loop(From, Operation, Param, Primary_info, [List_of_hosts], Listener_
                % UNEXPECTED MESSAGE TYPE
                io:format("Unexpected message format: Kill this process~n")
           %
-     end,
-     case Primary_info of
-          primary ->
-               send_and_wait(Operation, Params, List_of_hosts, List_of_hosts);
-          %Finally send data to client ACK or informations asked
-%%               send_update_to_clients(Params),
-%%               % Reply web-server with ack
-%%               From ! {Ack_operation, Params};
-%%
-          secondary ->
-               send_ack_to_primary(From, Params, Listener_process_id)
-     end,
-     odbc:disconnect(Ref_to_db).
+     end.
+
 
 %%% Receive ack routine ensure that all other secondary hosts have
 %%% received the correct parameters
@@ -314,6 +336,8 @@ receive_acks(Params, List_of_hosts) ->
                     io:format("Primary: ACK received~n"),
                     %Delete the host who responded from the list of hosts -> PID OF LISTENER LOOP
                     Remaining_list_of_hosts = delete(Remote_ID, List_of_hosts),
+                    %DELETE THIS BELOW
+                    %Remaining_list_of_hosts = List_of_hosts,
                     %io:format("~w~n", [Remote_ID]),
                     %io:format("~w~n", [List_of_hosts]),
                     %Call untill no host is in the list
@@ -321,8 +345,8 @@ receive_acks(Params, List_of_hosts) ->
                end
      after 10000 ->
           io:format("Entered host recovery routine ~n"),
-          host_register_recovery([List_of_hosts], Params),
-          whereis(listener_loop_process) ! {hosts_to_delete, {List_of_hosts}, primary, self()},
+          host_register_recovery(List_of_hosts, Params),
+          whereis(listener_loop_process) ! {hosts_to_delete, List_of_hosts, primary, self()},
           %SEND the response to client after recovery data are stored
           receive_acks(Params, [])
      end.

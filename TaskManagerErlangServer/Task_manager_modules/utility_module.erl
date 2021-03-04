@@ -10,11 +10,13 @@ get_timestamp_a() ->
 
 
 %Delete a list of host from the available list of hosts
-delete_hosts_from_list(List, []) ->
-  List;
-delete_hosts_from_list(List,[H|T])->
-  Updated_list = lists:delete(H, [List]),
-  delete_hosts_from_list(Updated_list, T).
+%delete_hosts_from_list(List, []) ->
+%  List;
+delete_hosts_from_list(List_hosts, List_failure)->
+  Updated_list = List_hosts -- List_failure,
+  Updated_list.
+  %Updated_list = lists:delete(H, [List]),
+  %delete_hosts_from_list(Updated_list, T).
 
 
 %Take element from array of touples [{a,b}, {c,d}]
