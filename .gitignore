@@ -15,3 +15,4 @@ install_manifest.txt
 libmaodbc.so
 LICENSE
 rebar.lock
+*.beam

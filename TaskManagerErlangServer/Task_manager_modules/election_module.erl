@@ -21,6 +21,7 @@ election_handler([List_of_hosts]) ->
     {ack_election_vote, From} ->
       io:format("~p: Received ack_election_vote from ~p, my job is done. Waiting for election_victory...~n", [self(), From]);
     Message ->
+      ok,
       io:format("dosandoasmndas ~p~n", [Message]);
     _ ->
       io:format("~p: received undefined message inside election handler~n", [self()]),
