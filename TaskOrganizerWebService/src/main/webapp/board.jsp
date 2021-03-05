@@ -10,6 +10,7 @@
 --%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <html>
+<link rel="stylesheet" href="css/board.css">
 <head>
     <title>Board overview</title>
     <script>
@@ -46,14 +47,17 @@
 </head>
 <body onload="updateBoardManager();">
 
-<h1>Your board</h1>
+<h1 id="title_1">Task</h1>
+<h1 id="title_2"> Organizer</h1>
+
+<h1 id="board_title">Your board</h1>
 
 <div id="main-frame">
     <%
-        out.println("<h2>"+session.getAttribute("currentBoard")+"</h2>");
+        out.println("<h2 id=\"current_board\">"+session.getAttribute("currentBoard")+"</h2>");
     %>
     <div id="backlog-stage">
-        <p>BACKLOG</p>
+        <p class="stage_title">BACKLOG</p>
         <%
             ArrayList<Task> backlog_tasks = (ArrayList<Task>) session.getAttribute("backlog_tasks");
             if (backlog_tasks.size()>0) {
@@ -64,7 +68,7 @@
                     } else {
                         color = "green";
                     }
-                    out.println("<div class=\"task_div\" style=\"color:" + color + ";\">");
+                    out.println("<div class=\"task_div\" style=\"border-color:" + color + ";\">");
                     out.println("<h1 class=\"title\">" + backlog_tasks.get(i).isTitle() + "</h1>");
                     out.println("<h2 class=\"type\">" + backlog_tasks.get(i).isType() + "</h2>");
                     out.println("<p class=\"desc\">" + backlog_tasks.get(i).isDescription() + "</p>");
@@ -79,7 +83,7 @@
         %>
     </div>
     <div id="doing-stage">
-        <p>DOING</p>
+        <p class="stage_title">DOING</p>
         <%
             ArrayList<Task> doing_tasks = (ArrayList<Task>) session.getAttribute("doing_tasks");
             if (doing_tasks.size()>0) {
@@ -90,7 +94,7 @@
                     } else {
                         color = "green";
                     }
-                    out.println("<div class=\"task_div\" style=\"color:" + color + ";\">");
+                    out.println("<div class=\"task_div\" style=\"border-color:" + color + ";\">");
                     out.println("<h1 class=\"title\">" + doing_tasks.get(i).isTitle() + "</h1>");
                     out.println("<h2 class=\"type\">" + doing_tasks.get(i).isType() + "</h2>");
                     out.println("<p class=\"desc\">" + doing_tasks.get(i).isDescription() + "</p>");
@@ -106,7 +110,7 @@
         %>
     </div>
     <div id="quality-check-stage">
-        <p>QUALITY CHECK</p>
+        <p class="stage_title">QUALITY CHECK</p>
         <%
             ArrayList<Task> quality_check_tasks = (ArrayList<Task>) session.getAttribute("quality_check_tasks");
             if (quality_check_tasks.size() > 0) {
@@ -117,7 +121,7 @@
                     } else {
                         color = "green";
                     }
-                    out.println("<div class=\"task_div\" style=\"color:" + color + ";\">");
+                    out.println("<div class=\"task_div\" style=\"border-color:" + color + ";\">");
                     out.println("<h1 class=\"title\">" + quality_check_tasks.get(i).isTitle() + "</h1>");
                     out.println("<h2 class=\"type\">" + quality_check_tasks.get(i).isType() + "</h2>");
                     out.println("<p class=\"desc\">" + quality_check_tasks.get(i).isDescription() + "</p>");
@@ -132,7 +136,7 @@
         %>
     </div>
     <div id="done-stage">
-        <p>DONE</p>
+        <p class="stage_title">DONE</p>
         <%
             ArrayList<Task> done_tasks = (ArrayList<Task>) session.getAttribute("done_tasks");
             if (done_tasks.size()>0) {
@@ -143,7 +147,7 @@
                     } else {
                         color = "green";
                     }
-                    out.println("<div class=\"task_div\" style=\"color:" + color + ";\">");
+                    out.println("<div class=\"task_div\" style=\"border-color:" + color + ";\">");
                     out.println("<h1 class=\"title\">" + done_tasks.get(i).isTitle() + "</h1>");
                     out.println("<h2 class=\"type\">" + done_tasks.get(i).isType() + "</h2>");
                     out.println("<p class=\"desc\">" + done_tasks.get(i).isDescription() + "</p>");
@@ -158,92 +162,95 @@
             }
         %>
     </div>
-    <div id="creation-menu">
-        <%
-            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-            Date currentDate = new Date();
-        %>
-        <form id="creation-form" action="CreateServlet">
-            <h2>Create a new task</h2>
-
-            <label for="task-name">Task name</label>
-            <input type="text" placeholder="Enter task name" name="task-name" id="task-name" required>
-
-            <label for="task-type">Task type</label>
-            <select name="task-type" id="task-type">
-                <option value="MANAGEMENT">MANAGEMENT</option>
-                <option value="REQUIREMENTS">REQUIREMENTS</option>
-                <option value="DESIGN">DESIGN</option>
-                <option value="IMPLEMENTATION">IMPLEMENTATION</option>
-                <option value="TESTING">TESTING</option>
-            </select>
-
-            <label for="task-desc">Task description</label>
-            <input type="text" placeholder="Enter task description" name="task-desc" id="task-desc" required>
-
+    <br>
+    <div id="op_menu">
+        <div id="creation-menu">
             <%
-                out.print("<label for='task-exp'>Task expiration date</label>");
-                out.println("<input type=\"date\" name=\"task-exp\" id=\"task-exp\" " +
-                        "value="+formatter.format(currentDate)+" min="+formatter.format(currentDate)+">");
+                SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+                Date currentDate = new Date();
             %>
+            <form id="creation-form" action="CreateServlet">
+                <h2>Create a new task</h2>
 
-            <label for="task-creator">Task creator</label>
-            <input type="text" placeholder="Enter creator's name" name="task-creator" id="task-creator" required>
+                <label for="task-name">Task name</label>
+                <input type="text" placeholder="Enter task name" name="task-name" id="task-name" required>
 
-            <br><br>
-            <input type="submit" value="Create">
+                <label for="task-type">Task type</label>
+                <select name="task-type" id="task-type">
+                    <option value="MANAGEMENT">MANAGEMENT</option>
+                    <option value="REQUIREMENTS">REQUIREMENTS</option>
+                    <option value="DESIGN">DESIGN</option>
+                    <option value="IMPLEMENTATION">IMPLEMENTATION</option>
+                    <option value="TESTING">TESTING</option>
+                </select>
 
-        </form>
-    </div>
+                <label for="task-desc">Task description</label>
+                <input type="text" placeholder="Enter task description" name="task-desc" id="task-desc" required>
 
-    <div id="deletion-menu">
-        <form id="deletion-form" action="DeleteServlet">
-            <h2>Delete a task</h2>
+                <%
+                    out.print("<label for='task-exp'>Task expiration date</label>");
+                    out.println("<input type=\"date\" name=\"task-exp\" id=\"task-exp\" " +
+                            "value="+formatter.format(currentDate)+" min="+formatter.format(currentDate)+">");
+                %>
 
-            <label for="task-name-del">Task name</label>
-            <input type="text" placeholder="Enter task name" name="task-name-del" id="task-name-del" required>
+                <label for="task-creator">Task creator</label>
+                <input type="text" placeholder="Enter creator's name" name="task-creator" id="task-creator" required>
 
-            <label for="task-stage-del">Select to which stage</label>
-            <select name="task-stage-del" id="task-stage-del">
-                <option value="0">BACKLOG</option>
-                <option value="1">DOING</option>
-                <option value="2">QUALITY CHECK</option>
-                <option value="3">DONE</option>
-            </select>
+                <br><br>
+                <input class="submit" type="submit" value="Create">
 
-            <br><br>
-            <input type="submit" value="Submit">
+            </form>
+        </div>
 
-        </form>
-    </div>
+        <div id="deletion-menu">
+            <form id="deletion-form" action="DeleteServlet">
+                <h2>Delete a task</h2>
 
-    <div id="move-menu">
-        <form id="move-form" action="MoveServlet">
-            <h2>Move a task</h2>
+                <label for="task-name-del">Task name</label>
+                <input type="text" placeholder="Enter task name" name="task-name-del" id="task-name-del" required>
 
-            <label for="task-name-move">Task name</label>
-            <input type="text" placeholder="Enter task name" name="task-name-move" id="task-name-move" required>
+                <label for="task-stage-del">Select to which stage</label>
+                <select name="task-stage-del" id="task-stage-del">
+                    <option value="0">BACKLOG</option>
+                    <option value="1">DOING</option>
+                    <option value="2">QUALITY CHECK</option>
+                    <option value="3">DONE</option>
+                </select>
 
-            <label for="task-stage-mov-from">Select from which stage</label>
-            <select name="task-stage-mov-from" id="task-stage-mov-from">
-                <option value="0">BACKLOG</option>
-                <option value="1">DOING</option>
-                <option value="2">QUALITY CHECK</option>
-                <option value="3">DONE</option>
-            </select>
+                <br><br>
+                <input class="submit" type="submit" value="Submit">
 
-            <label for="task-stage-mov-to">Select to which stage</label>
-            <select name="task-stage-mov-to" id="task-stage-mov-to">
-                <option value="0">BACKLOG</option>
-                <option value="1">DOING</option>
-                <option value="2">QUALITY CHECK</option>
-                <option value="3">DONE</option>
-            </select>
+            </form>
+        </div>
 
-            <br><br>
-            <input type="submit" value="Move">
+        <div id="move-menu">
+            <form id="move-form" action="MoveServlet">
+                <h2>Move a task</h2>
 
-        </form>
+                <label for="task-name-move">Task name</label>
+                <input type="text" placeholder="Enter task name" name="task-name-move" id="task-name-move" required>
+
+                <label for="task-stage-mov-from">Select from which stage</label>
+                <select name="task-stage-mov-from" id="task-stage-mov-from">
+                    <option value="0">BACKLOG</option>
+                    <option value="1">DOING</option>
+                    <option value="2">QUALITY CHECK</option>
+                    <option value="3">DONE</option>
+                </select>
+
+                <label for="task-stage-mov-to">Select to which stage</label>
+                <select name="task-stage-mov-to" id="task-stage-mov-to">
+                    <option value="0">BACKLOG</option>
+                    <option value="1">DOING</option>
+                    <option value="2">QUALITY CHECK</option>
+                    <option value="3">DONE</option>
+                </select>
+
+                <br><br>
+                <input class="submit" type="submit" value="Move">
+
+            </form>
+        </div>
     </div>
 </div>
 
