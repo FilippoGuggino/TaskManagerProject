@@ -1,7 +1,8 @@
 -module(utility_module).
 
+-include_lib("amqp_client/include/amqp_client.hrl").
 %% API
--export([get_timestamp_a/0, delete_hosts_from_list/2, isolate_element/2, index_of/2, index_of/3]).
+-export([send_update_to_rabbitmq/3, get_timestamp_a/0, delete_hosts_from_list/2, isolate_element/2, index_of/2, index_of/3]).
 
 -spec get_timestamp_a() -> integer().
 get_timestamp_a() ->
@@ -33,3 +34,20 @@ index_of([H | T], Value, Index) ->
   index_of(T, Value, Index+1).
 index_of(List, Value)->
   index_of(List, Value, 1).
+
+send_update_to_rabbitmq(Operation, Params, Board_title) ->
+  application:ensure_started(amqp_client),
+  {ok, Connection} = amqp_connection:start(#amqp_params_network{host = "172.18.0.160"}),
+  {ok, Channel} = amqp_connection:open_channel(Connection),
+  
+  Exchange_name = <<"topics_boards">>,
+  
+  Payload = term_to_binary({Operation, Params}),
+  
+  Publish = #'basic.publish'{exchange = Exchange_name, routing_key = Board_title},
+  amqp_channel:cast(Channel, Publish, #amqp_msg{payload = Payload}),
+  
+  %% Close the channel
+  amqp_channel:close(Channel),
+  %% Close the connection
+  amqp_connection:close(Connection).

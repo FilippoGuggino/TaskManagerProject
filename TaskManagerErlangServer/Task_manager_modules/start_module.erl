@@ -27,6 +27,7 @@ start() ->
 %%  % register(primary_process, PID_primary),
 %%  timer:sleep(2000),
 	io:format("----------------- TESTING HOST FAILURE ------------------~n"),
+     timer:sleep(2000),
 	exit(PID_secondary, testing_election),
 	testing_module:client_test("A", PID_primary),
 	timer:sleep(50000),

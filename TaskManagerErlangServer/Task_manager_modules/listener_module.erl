@@ -211,7 +211,16 @@ get_head([H | _]) ->
 broadcast_or_ack(From, Operation, Params, Primary_info, List_of_hosts, Listener_process_id) ->
      case Primary_info of
           primary ->
-               send_and_wait(Operation, Params, List_of_hosts, List_of_hosts);
+               send_and_wait(Operation, Params, List_of_hosts, List_of_hosts),
+               case Operation of
+                    create_task ->
+                         ok;
+                    update_task ->
+                         % TODO send_update_to_rabbitmq(Operation, Params, Board_title) -> per guggio: {Operation, Params}
+                         ok;
+                    _ ->
+                         ok
+               end;
           %Finally send data to client ACK or informations asked
 %%               send_update_to_clients(Params),
 %%               % Reply web-server with ack
@@ -304,7 +313,8 @@ db_manager_loop(From, Operation, Param, Primary_info, List_of_hosts, Listener_pr
                %odbc:disconnect(Ref_to_db);
 
           update_task ->
-               update_task_db(Params);
+               update_task_db(Params),
+               broadcast_or_ack(From, Operation, Params, Primary_info, List_of_hosts, Listener_process_id);
                % TODO send 'ack_update_task' back + send same ack message to rabbitmq
 
 

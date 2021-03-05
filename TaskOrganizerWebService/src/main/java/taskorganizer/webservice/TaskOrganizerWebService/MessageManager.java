@@ -175,7 +175,8 @@ public class MessageManager {
                 quality_check_task_list,done_task_list);
     }
 
-    public boolean sendCreate(String board) throws OtpErlangExit, OtpErlangDecodeException {
+    // APPROVED
+    public boolean sendCreateBoard(String board) throws OtpErlangExit, OtpErlangDecodeException {
         if(board.isEmpty()){
             System.err.println("Empty strings are not allowed for board name!");
             return false;
@@ -185,19 +186,20 @@ public class MessageManager {
         board_title[0] = new OtpErlangString(board);
         OtpErlangTuple formatted_board_title = new OtpErlangTuple(board_title);
 
-        OtpErlangObject[] msg = new OtpErlangObject[5];
+        OtpErlangObject[] msg = new OtpErlangObject[4];
         msg[0] = new OtpErlangAtom("create_board");
         msg[1] = formatted_board_title;
         msg[2] = new OtpErlangAtom("primary");
-        msg[4] = this.mbox.self();
+        msg[3] = this.mbox.self();
 
         OtpErlangTuple formatted_msg = new OtpErlangTuple(msg);
-        mbox.send("primary",formatted_msg);
+        // mbox.send("primary",formatted_msg);
 
-        OtpErlangObject response;
+        OtpErlangObject response = sendAndWaitForResponse(formatted_msg);
         OtpErlangTuple response_mess;
         int timeout = 0;
 
+        //TODO modify
         while(true) {
             response = this.mbox.receive();
             if (response instanceof OtpErlangTuple) {
