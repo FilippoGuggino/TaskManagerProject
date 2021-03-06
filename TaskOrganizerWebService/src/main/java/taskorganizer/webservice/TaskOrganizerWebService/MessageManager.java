@@ -146,12 +146,23 @@ public class MessageManager {
 
                     exp_date = formatter.parse(exp_date_string);
 
+                    // Received message format: task id, Description, expiration date, stage id, title, creator, type
+
                     Task task_element = new Task(single_task.elementAt(4).toString(),single_task.elementAt(6).toString(),
                             single_task.elementAt(1).toString(),exp_date,single_task.elementAt(5).toString());
 
+                    //set task id for database purposes
+                    task_element.setID(Integer.parseInt(single_task.elementAt(0).toString()));
+
                     String stage_id_s = single_task.elementAt(3).toString();
                     int stage_id = Integer.parseInt(stage_id_s);
+
+                    //setting integral stage number for database purposes
+                    task_element.setIntegralStage(stage_id);
+
                     stage_id = stage_id % 4;
+
+                    task_element.setStage_index(stage_id);
 
                     if (stage_id == 0){
                         backlog_task_list.add(task_element);
@@ -175,11 +186,17 @@ public class MessageManager {
                 quality_check_task_list,done_task_list);
     }
 
-    // APPROVED
-    public boolean sendCreateBoard(String board) throws OtpErlangExit, OtpErlangDecodeException {
+    /**
+     * This function send a new message to the primary asking to create a new board with a specified name.
+     * The function raise an exception when board name is empty, when ACK is incorrect and when the response message
+     * is not an instance of an OtpErlangTuple.
+     * @param board: String of the board name
+     */
+
+    public void sendCreateBoard(String board) throws Exception {
         if(board.isEmpty()){
             System.err.println("Empty strings are not allowed for board name!");
-            return false;
+            throw new Exception("Empty strings are not allowed for board name");
         }
 
         OtpErlangObject[] board_title = new OtpErlangObject[2];
@@ -193,33 +210,169 @@ public class MessageManager {
         msg[3] = this.mbox.self();
 
         OtpErlangTuple formatted_msg = new OtpErlangTuple(msg);
-        // mbox.send("primary",formatted_msg);
+//        mbox.send("primary",formatted_msg);
 
-        OtpErlangObject response = sendAndWaitForResponse(formatted_msg);
+        OtpErlangObject response;
         OtpErlangTuple response_mess;
-        int timeout = 0;
 
-        //TODO modify
-        while(true) {
-            response = this.mbox.receive();
-            if (response instanceof OtpErlangTuple) {
-                response_mess = (OtpErlangTuple) response;
-                if (response_mess.elementAt(0).toString().equals("ack_create_board")) {
-                    return true;
-                } else {
-                    if(timeout > 20){
-                        return false;
-                    }
-                    this.mbox.send("primary",formatted_msg);
-                    timeout++;
-                }
+//        int timeout = 0;
+        response = sendAndWaitForResponse(formatted_msg);
+
+        if (response instanceof OtpErlangTuple) {
+            response_mess = (OtpErlangTuple) response;
+            if (response_mess.elementAt(0).toString().equals("ack_create_board")) {
+                System.out.println("CREATE_BOARD: ACK correctly received");
+                return;
+            }
+            else {
+                System.out.println("CREATE_BOARD: Incorrect ACK received from the primary server!");
+                throw new Exception(" Incorrect ACK");
             }
         }
+        else {
+            System.out.println("CREATE_BOARD: Response message is not an instance of OtpErlangTuple!");
+            throw new Exception("Response message is not an instance of OtpErlangTuple");
+        }
+
+        //OLD CODE - still needs to see if new one is ok, do not delete it please
+//        while(true) {
+//            if (response instanceof OtpErlangTuple) {
+//                response_mess = (OtpErlangTuple) response;
+//                if (response_mess.elementAt(0).toString().equals("ack_create_board")) {
+//                    return true;
+//                }
+//                else {
+//                    if(timeout > 20){
+//                        return false;
+//                    }
+//                    timeout++;
+//                    response = sendAndWaitForResponse(formatted_msg);
+//                }
+//            }
+//        }
     }
 
-    public boolean sendMove(){
-        //todo send message that a task has been moved from a stage to another
-        return true;
+    /**
+     * This function send a new message to the primary asking to create a new task in a specific board with specified parameters.
+     * The function raise an exception when board name is empty, when ACK is incorrect and when the response message
+     * is not an instance of an OtpErlangTuple.
+     * @param task: Task object that contains all the parameters of the task that needs to be created
+     * @param board: String of the board name
+     */
+
+    public int sendCreateTask(Task task, String board) throws Exception {
+
+        if(board.isEmpty()){
+            System.err.println("CREATE TASK: Empty strings are not allowed for board name!");
+            throw new Exception("Empty strings are not allowed for board name");
+        }
+
+        // Send this message format: Description, expiration date, stage id, title, creator, type
+
+        OtpErlangObject[] Task = new OtpErlangObject[7];
+        Task[0] = new OtpErlangString(board);
+        Task[1] = new OtpErlangString(task.isDescription());
+        Task[2] = new OtpErlangString(task.expirationDate());
+        Task[3] = new OtpErlangString(Integer.toString(task.currentStage()));
+        Task[4] = new OtpErlangString(task.isTitle());
+        Task[5] = new OtpErlangString(task.isCreator());
+        Task[6] = new OtpErlangString(task.isType());
+        OtpErlangTuple formatted_task = new OtpErlangTuple(Task);
+
+        OtpErlangObject[] msg = new OtpErlangObject[4];
+        msg[0] = new OtpErlangAtom("create_task");
+        msg[1] = formatted_task;
+        msg[2] = new OtpErlangAtom("primary");
+        msg[3] = this.mbox.self();
+
+        OtpErlangTuple formatted_msg = new OtpErlangTuple(msg);
+
+        OtpErlangObject response;
+        OtpErlangTuple response_mess;
+
+        response = sendAndWaitForResponse(formatted_msg);
+
+        if (response instanceof OtpErlangTuple) {
+            response_mess = (OtpErlangTuple) response;
+            if (response_mess.elementAt(0).toString().equals("ack_create_task")) {
+                System.out.println("CREATE_TASK: ACK correctly received");
+                return Integer.parseInt(response_mess.elementAt(2).toString());
+            }
+            else {
+                System.err.println("CREATE_TASK: Incorrect ACK received from the primary server!");
+                throw new Exception("Incorrect ACK");
+            }
+        }
+        else {
+            System.err.println("CREATE_TASK: Response message is not an instance of OtpErlangTuple!");
+            throw new Exception("Response message is not an instance of OtpErlangTuple");
+        }
+
+    }
+
+    /**
+     * This function send a new message to the primary asking to move new task in a specific board to new stage.
+     * The function raise an exception when board name is empty, when ACK is incorrect and when the response message
+     * is not an instance of an OtpErlangTuple.
+     * @param board: String of the board name
+     * @param taskID: ID of the task that has to be inserted
+     * @param toStage: integer that specify the number of the new stage
+     */
+
+    public void sendMoveTask(String board, int taskID, int toStage, String desc) throws Exception {
+
+        if(board.isEmpty()){
+            System.err.println("MOVE_TASK: Empty strings are not allowed for board name!");
+            throw new Exception("Empty strings are not allowed for board name");
+        }
+
+        // Send this message format: board, task id, new stage id
+
+        OtpErlangObject[] Task = new OtpErlangObject[4];
+        Task[0] = new OtpErlangString(board);
+        Task[1] = new OtpErlangString(Integer.toString(taskID));
+        Task[2] = new OtpErlangString(Integer.toString(toStage));
+
+        //TODO remove this last parameter called new_task_description
+        Task[3] = new OtpErlangString(desc);
+
+        OtpErlangTuple formatted_move = new OtpErlangTuple(Task);
+
+        OtpErlangObject[] msg = new OtpErlangObject[4];
+        msg[0] = new OtpErlangAtom("update_task");
+        msg[1] = formatted_move;
+        msg[2] = new OtpErlangAtom("primary");
+        msg[3] = this.mbox.self();
+
+        OtpErlangTuple formatted_msg = new OtpErlangTuple(msg);
+
+        OtpErlangObject response;
+        OtpErlangTuple response_mess;
+
+        response = sendAndWaitForResponse(formatted_msg);
+
+        if (response instanceof OtpErlangTuple) {
+            response_mess = (OtpErlangTuple) response;
+            if (response_mess.elementAt(0).toString().equals("ack_update_task")) {
+                if (response_mess.elementAt(1).toString().equals(String.valueOf(taskID))){
+                    System.out.println("MOVE_TASK: ACK and TaskID correctly received");
+                    return;
+                }
+                else {
+                    //TODO check id we need to cycle here
+                    System.err.println("MOVE_TASK: Incorrect TaskID from the primary server!");
+                    throw new Exception("Incorrect TaskID from the primary server");
+                }
+            }
+            else {
+                System.err.println("MOVE_TASK: Incorrect ACK received from the primary server!");
+                throw new Exception("Empty strings are not allowed for board name");
+            }
+        }
+        else {
+            System.err.println("MOVE_TASK: Response message is not an instance of OtpErlangTuple!");
+            throw new Exception("Response message is not an instance of OtpErlangTuple");
+        }
     }
 
     public boolean sendDelete(){
