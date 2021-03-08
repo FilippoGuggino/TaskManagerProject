@@ -5,7 +5,7 @@
 -import(election_module, [election_handler/1]).
 -import(recover_node_module, [host_register_recovery/2, recovery_routine/2]).
 -import(utility_module, [isolate_element/2, delete_hosts_from_list/2, get_timestamp_a/0]).
--import(message_sending_module, [server_up_message/2, send_and_wait/4, send_ack_to_primary/3]).
+-import(message_sending_module, [server_up_message/2, send_and_wait/4, send_ack_to_primary/3, send_data_to_client/2]).
 %% API
 -export([listener_loop/4, receive_acks/2, db_manager_loop/6]).
 
@@ -214,8 +214,10 @@ broadcast_or_ack(From, Operation, Params, Primary_info, List_of_hosts, Listener_
                send_and_wait(Operation, Params, List_of_hosts, List_of_hosts),
                case Operation of
                     create_task ->
+                         utility_module:send_update_to_rabbitmq(ack_create_task, Params, element(2, Params)),
                          ok;
                     update_task ->
+                         utility_module:send_update_to_rabbitmq(ack_update_task, Params, element(2, Params)),
                          % TODO send_update_to_rabbitmq(Operation, Params, Board_title) -> per guggio: {Operation, Params}
                          ok;
                     _ ->
@@ -320,10 +322,12 @@ db_manager_loop(From, Operation, Param, Primary_info, List_of_hosts, Listener_pr
 
           %TODO: Define new Message to get data
           load_boards ->
-               Data = load_boards_db();
+               Data = load_boards_db(),
+               send_data_to_client(From, Data);
 
           load_tasks ->
-               Data = load_tasks_db(Params);
+               Data = load_tasks_db(Params),
+               send_data_to_client(From, Data);
 
           true ->
                % UNEXPECTED MESSAGE TYPE

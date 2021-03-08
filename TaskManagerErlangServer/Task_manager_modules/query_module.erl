@@ -28,39 +28,35 @@ insert_host_recovery(Host_pid, Params) ->
 create_board_db(Params) ->
   {ok,Ref_to_db} = odbc:connect("dsn=test_;server=localhost;database=TaskOrganizer;user=root;", []),
   %CREATE BOARDS
-  {Info, _} = odbc:param_query(Ref_to_db, "INSERT INTO boards (board_title, last_update_time) VALUES (?,?)",
+  odbc:param_query(Ref_to_db, "INSERT INTO boards (board_title, last_update_time) VALUES (?,?)",
     [{{sql_varchar, 255},
       [element(2, Params)]},
       {{sql_varchar, 255},
         [element(1, Params)]}
     ]),
-  if
-    Info /= error ->
-      %CREATE ASSOCIATE STAGES
-      List_of_stages = ["BACKLOG", "DOING", "QUALITY CHECK","DONE"],
-      odbc:param_query(Ref_to_db, "INSERT INTO stages (stage_title, board_title, last_update_time) VALUES (?, ?, ?)",
-        [{{sql_varchar, 255},
-          List_of_stages},
-          {{sql_varchar, 255},
-            [element(2, Params) ||  X <- List_of_stages]},
-          {{sql_varchar, 255},
-            [element(1, Params) ||  X <- List_of_stages]}
-        ]),
-      io:format("DB INFO: create_board query ok~n");
-  true ->
-      io:format("DB INFO: This table already exists ~n")
-  end,
+  io:format("DB INFO: update_boards query ok~n"),
   odbc:disconnect(Ref_to_db).
 
+%Params = {Board title, Description, expiration date, stage id, title, creator, type}
 create_task_db(Params)->
   {ok,Ref_to_db} = odbc:connect("dsn=test_;server=localhost;database=TaskOrganizer;user=root;", []),
-  odbc:param_query(Ref_to_db, "INSERT INTO tasks (task_description, expiration_date, stage_id, last_update_time) VALUES (?, ?, ?, ?)",
+  odbc:param_query(Ref_to_db, "INSERT INTO tasks (board_title, task_description, expiration_date,
+                                                stage_id, task_title, author,  type, last_update_time)
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
     [{{sql_varchar, 255},
-      [element(2, Params)]},
-      {{sql_varchar, 20},
+        [element(2, Params)]},
+      {{sql_varchar, 255},
         [element(3, Params)]},
-      {sql_integer,
+      {{sql_varchar, 255},
         [element(4, Params)]},
+      {sql_integer,
+        [element(5, Params)]},
+      {{sql_varchar, 255},
+        [element(6, Params)]},
+      {{sql_varchar, 255},
+        [element(7, Params)]},
+      {{sql_varchar, 255},
+        [element(8, Params)]},
       {{sql_varchar, 255},
         [element(1, Params)]}
     ]),
@@ -76,23 +72,26 @@ load_boards_db() ->
 load_tasks_db( Params) ->
   {ok,Ref_to_db} = odbc:connect("dsn=test_;server=localhost;database=TaskOrganizer;user=root;", []),
   {selected, _, Tasks} = odbc:param_query(Ref_to_db, "SELECT *
-                                                      FROM stages JOIN tasks ON stages.stage_id = tasks.stage_id
-                                                      WHERE stages.board_title = ? ",
+                                                      FROM  tasks
+                                                      WHERE board_title = ? ",
     [{{sql_varchar, 255},
       [element(2, Params)]}
     ]),
   odbc:disconnect(Ref_to_db),
   Tasks.
 
+%{Board title, task title, new stage id }
 update_task_db(Params) ->
   {ok,Ref_to_db} = odbc:connect("dsn=test_;server=localhost;database=TaskOrganizer;user=root;", []),
-  odbc:param_query(Ref_to_db, "UPDATE tasks SET stage_id = ?, last_update_time=?  WHERE task_id = ?",
+  odbc:param_query(Ref_to_db, "UPDATE tasks SET stage_id = ?, last_update_time=?  WHERE task_title = ? AND board_title = ?",
     [{sql_integer,
-      [element(2, Params)]},
+      [element(4, Params)]},
       {{sql_varchar, 255},
         [element(1, Params)]},
-      {sql_integer,
-        [element(3, Params)]}
+      {{sql_varchar, 255},
+        [element(3, Params)]},
+      {{sql_varchar, 255},
+        [element(2, Params)]}
     ]),
   io:format("DB INFO: update_task query ok~n"),
   odbc:disconnect(Ref_to_db).
@@ -128,24 +127,34 @@ delete_host_from_recovery(Process_id) ->
 
 create_task_recovery(Params)->
    {ok,Ref_to_db} = odbc:connect("dsn=test_;server=localhost;database=TaskOrganizer;user=root;", []),
-   odbc:param_query(Ref_to_db, "INSERT INTO tasks (task_id, task_description, expiration_date, stage_id, last_update_time) VALUES (?, ?, ?, ?, ?)",
-           [        {sql_integer,
-                              [element(1, Params)]},
-                         {{sql_varchar, 255},
-                              [element(2, Params)]},
-                         {{sql_varchar, 20},
-                              [element(3, Params)]},
-                         {sql_integer,
-                              [element(4, Params)]},
-                         {{sql_varchar, 255},
-                              [element(5, Params)]}
-     ]),
-  odbc:param_query(Ref_to_db, "UPDATE tasks SET stage_id=?, last_update_time=? WHERE task_id=?",
+  odbc:param_query(Ref_to_db, "INSERT INTO tasks (board_title, task_description, expiration_date,
+                                                stage_id, task_title, author,  type, last_update_time)
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+    [{{sql_varchar, 255},
+      [element(1, Params)]},
+      {{sql_varchar, 255},
+        [element(2, Params)]},
+      {{sql_varchar, 255},
+        [element(3, Params)]},
+      {sql_integer,
+        [element(4, Params)]},
+      {{sql_varchar, 255},
+        [element(5, Params)]},
+      {{sql_varchar, 255},
+        [element(6, Params)]},
+      {{sql_varchar, 255},
+        [element(7, Params)]},
+      {{sql_varchar, 255},
+        [element(8, Params)]}
+    ]),
+  odbc:param_query(Ref_to_db, "UPDATE tasks SET stage_id=?, last_update_time=? WHERE task_title=? AND board_title=?",
                      [{sql_integer,
                                [element(4, Params)]},
                        {{sql_varchar, 255},
+                               [element(8, Params)]},
+                        {{sql_varchar, 255},
                                [element(5, Params)]},
-                        {sql_integer,
+                        {{sql_varchar, 255},
                                [element(1, Params)]}
                     ]),
    odbc:disconnect(Ref_to_db).

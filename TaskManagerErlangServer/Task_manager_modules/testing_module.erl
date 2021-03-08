@@ -25,7 +25,16 @@ client_test(Title, PID_server) ->
 %PID_server ! {update_task,  {2,1}, primary, self()}.
 
 start() ->
-  ok.
+  odbc:start(),
+  Board = {"0", "Magicboard"},
+  query_module:create_board_db(Board),
+  Task = {"1", "Magicboard", "task di prova", "2021-12-12", 0, "Task", "Salume Magico", "Management"},
+  query_module:create_task_db(Task),
+  %Task_up = {"20", "Magicboard", "Task", 125},
+  %query_module: update_task_db(Task_up),
+  Task_rec= {"Magicboard", "task di prova", "2021-12-12", 44, "2-Task", "Salume Magico", "Management", "8080"},
+  query_module:create_task_recovery(Task_rec),
+  query_module:load_tasks_db({"0", "Magicboard"}).
   %PID_secondary = spawn(listener_module,listener_loop,[]),
   %PID_primay = spawn(listener_module,listener_loop,[[PID_secondary]]),
   %spawn(?MODULE,client_test, "A", [[PID_primay]]).
