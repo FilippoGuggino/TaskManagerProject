@@ -109,6 +109,15 @@ public class MessageManager {
         return response;
     }
 
+    /**
+     * This function send a new message to the primary asking for all tasks belonging to a specified board.
+     * Tasks are sent in an array format and each element has the following structure:
+     * <<task_id, task_description, expiration_date, stage_id, title, creator, type>
+     * @param board: String of the board name
+     * @return an UpdatePackage that contains 4 arraylist, each one containing the tasks belonging to the
+     * corresponding stage
+     */
+
     public UpdatePackage loadTasks(String board) throws OtpErlangExit, OtpErlangDecodeException {
 
         OtpErlangObject[] board_title = new OtpErlangObject[2];
@@ -121,17 +130,18 @@ public class MessageManager {
         msg[2] = new OtpErlangAtom("primary");
         msg[4] = this.mbox.self();
         OtpErlangTuple formatted_msg = new OtpErlangTuple(msg);
-        mbox.send("primary",formatted_msg);
 
         OtpErlangObject response;
         OtpErlangTuple tasks;
 
+        //components of UpdatePackage
         ArrayList<Task> backlog_task_list = new ArrayList<>();
         ArrayList<Task> doing_task_list = new ArrayList<>();
         ArrayList<Task> quality_check_task_list = new ArrayList<>();
         ArrayList<Task> done_task_list = new ArrayList<>();
 
-        response = this.mbox.receive();
+        //send tasks request and wait for all tasks to arrive
+        response = sendAndWaitForResponse(formatted_msg);
 
         if (response instanceof OtpErlangTuple) {
             tasks = (OtpErlangTuple)response;
