@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS tasks (
     stage_id INT, -- From 0 to 3
     task_title VARCHAR(255) NOT NULL,
     author VARCHAR(255) NOT NULL,
-    'type' VARCHAR(255) NOT NULL,
+    type VARCHAR(255) NOT NULL,
     last_update_time VARCHAR(255) not null,
 
     primary key (task_title, board_title),

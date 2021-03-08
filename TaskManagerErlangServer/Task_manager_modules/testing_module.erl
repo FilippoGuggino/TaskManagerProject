@@ -21,7 +21,7 @@ client_test(Title, PID_server) ->
 % io:format("------------------Send data to SERVERS~n"),
 % PID_server ! {create_stage, {"Stage1", Title}, primary, self()},
 
-  PID_server ! {create_task,  {"Task: Down secondary","2021-10-10", 2}, primary, self()}.
+  PID_server ! {create_task,  {"Magicboard", "task di prova", "2021-12-12", 0, "Task", "Salume Magico", "Management"}, primary, self()}.
 %PID_server ! {update_task,  {2,1}, primary, self()}.
 
 start() ->
