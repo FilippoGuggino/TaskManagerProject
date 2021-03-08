@@ -5,25 +5,26 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 
 import static java.lang.System.exit;
 
 public class MessageManager {
-    OtpNode webserver;
-    OtpMbox mbox;
-    OtpErlangPid primaryPid;
+    static OtpNode webserver;
+    static OtpMbox mbox;
+    static OtpErlangPid primaryPid;
 
-    public MessageManager(){
+    static{
         try {
-            this.webserver = new OtpNode("webservice@172.18.0.2", "test");
+            webserver = new OtpNode("webservice@172.18.0.2", "test");
         } catch (Exception e) {
             e.printStackTrace();
         }
-        this.mbox = this.webserver.createMbox("webserver");
-        this.mbox.registerName("webserver");
+        mbox = webserver.createMbox("webserver");
+        mbox.registerName("webserver");
         System.out.println("Connecting to the primary...");
-        this.primaryPid = RabbitMQManager.fetchPrimary();
-        if (this.webserver.ping(this.primaryPid.node(), 2000)){
+        primaryPid = RabbitMQManager.fetchPrimary();
+        if (webserver.ping(primaryPid.node(), 2000)){
             System.out.println("OK: Primary server is online!");
         }
         else {
@@ -32,12 +33,12 @@ public class MessageManager {
         }
     }
 
-    public ArrayList<String> loadBoards() throws OtpErlangDecodeException {
+    public static ArrayList<String> loadBoards() throws OtpErlangDecodeException {
         OtpErlangObject[] msg = new OtpErlangObject[4];
         msg[0] = new OtpErlangAtom("load_boards");
-        msg[1] = new OtpErlangAtom("load_boards");
+        msg[1] = new OtpErlangTuple(msg[0]);
         msg[2] = new OtpErlangAtom("primary");
-        msg[3] = this.mbox.self();
+        msg[3] = mbox.self();
         OtpErlangTuple formatted_msg = new OtpErlangTuple(msg);
 
         OtpErlangObject response = null;
@@ -51,16 +52,20 @@ public class MessageManager {
         }
 
         if (response instanceof OtpErlangTuple) {
-            boards = (OtpErlangTuple)response;
-            for (int i=0;i<boards.arity();i++){
-                OtpErlangObject board_title = boards.elementAt(i);
-                board_list.add(board_title.toString());
+            OtpErlangTuple boardOuterTuple = (OtpErlangTuple) response;
+            OtpErlangList boardErlangList = (OtpErlangList) boardOuterTuple.elementAt(0);
+            OtpErlangTuple tmpTuple = null;
+            OtpErlangString tmpBoardTitle = null;
+            for (Iterator<OtpErlangObject> it = boardErlangList.iterator(); it.hasNext(); ) {
+                tmpTuple = (OtpErlangTuple) it.next();
+                tmpBoardTitle = (OtpErlangString) tmpTuple.elementAt(0);
+                board_list.add(tmpBoardTitle.stringValue());
             }
         }
         return board_list;
     }
 
-    public void test(){
+    public static void test(){
         OtpErlangObject[] msg = new OtpErlangObject[2];
         msg[0] = new OtpErlangAtom("test");
         msg[1] = mbox.self();
@@ -90,17 +95,18 @@ public class MessageManager {
      * @param obj: Erlang object to send to the primary
      * @return : generic erlang object received from the primary
      */
-    private OtpErlangObject sendAndWaitForResponse(OtpErlangObject obj) {
+    private static OtpErlangObject sendAndWaitForResponse(OtpErlangObject obj) {
         System.out.println("send message: "+  obj.toString() +"   to " + primaryPid.toString());
         OtpErlangObject response = null;
         while(response == null){
-            this.mbox.send(primaryPid, obj);
+            mbox.send(primaryPid, obj);
             try {
-                response = this.mbox.receive(2000);
+                response = mbox.receive(2000);
                 if(response == null){
                     System.out.println("Probably the primary is down... Fetching new primary info");
-                    this.primaryPid = RabbitMQManager.fetchPrimary();
+                    primaryPid = RabbitMQManager.fetchPrimary();
                 }
+                System.out.println("ciao: "+ response.toString());
             } catch (OtpErlangExit | OtpErlangDecodeException e) {
                 e.printStackTrace();
             }
@@ -117,22 +123,22 @@ public class MessageManager {
      * @return an UpdatePackage that contains 4 arraylist, each one containing the tasks belonging to the
      * corresponding stage
      */
+    public static UpdatePackage loadTasks(String board) throws OtpErlangExit, OtpErlangDecodeException {
 
-    public UpdatePackage loadTasks(String board) throws OtpErlangExit, OtpErlangDecodeException {
-
-        OtpErlangObject[] board_title = new OtpErlangObject[2];
-        board_title[0] = new OtpErlangString(board);
+        OtpErlangObject board_title = new OtpErlangString(board);
         OtpErlangTuple formatted_board_title = new OtpErlangTuple(board_title);
 
-        OtpErlangObject[] msg = new OtpErlangObject[5];
+        OtpErlangObject[] msg = new OtpErlangObject[4];
         msg[0] = new OtpErlangAtom("load_tasks");
         msg[1] = formatted_board_title;
         msg[2] = new OtpErlangAtom("primary");
-        msg[4] = this.mbox.self();
+        msg[3] = mbox.self();
         OtpErlangTuple formatted_msg = new OtpErlangTuple(msg);
 
-        OtpErlangObject response;
-        OtpErlangTuple tasks;
+        //send tasks request and wait for all tasks to arrive
+        OtpErlangObject response = sendAndWaitForResponse(formatted_msg);
+        System.out.println(response);
+        OtpErlangTuple tasksTuple;
 
         //components of UpdatePackage
         ArrayList<Task> backlog_task_list = new ArrayList<>();
@@ -140,15 +146,13 @@ public class MessageManager {
         ArrayList<Task> quality_check_task_list = new ArrayList<>();
         ArrayList<Task> done_task_list = new ArrayList<>();
 
-        //send tasks request and wait for all tasks to arrive
-        response = sendAndWaitForResponse(formatted_msg);
-
         if (response instanceof OtpErlangTuple) {
-            tasks = (OtpErlangTuple)response;
-            for (int i=0;i<tasks.arity();i++){
-                OtpErlangTuple single_task = (OtpErlangTuple) tasks.elementAt(i);
+            tasksTuple = (OtpErlangTuple) response;
+            OtpErlangList tasksList = (OtpErlangList) tasksTuple.elementAt(0);
+            for (Iterator<OtpErlangObject> it = tasksList.iterator(); it.hasNext(); ) {
+                OtpErlangTuple single_task = (OtpErlangTuple) it.next();
 
-                String exp_date_string = single_task.elementAt(2).toString();
+                String exp_date_string = ((OtpErlangString)single_task.elementAt(2)).stringValue();
                 SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
                 Date exp_date;
 
@@ -203,7 +207,7 @@ public class MessageManager {
      * @param board: String of the board name
      */
 
-    public void sendCreateBoard(String board) throws Exception {
+    public static void sendCreateBoard(String board) throws Exception {
         if(board.isEmpty()){
             System.err.println("Empty strings are not allowed for board name!");
             throw new Exception("Empty strings are not allowed for board name");
@@ -217,7 +221,7 @@ public class MessageManager {
         msg[0] = new OtpErlangAtom("create_board");
         msg[1] = formatted_board_title;
         msg[2] = new OtpErlangAtom("primary");
-        msg[3] = this.mbox.self();
+        msg[3] = mbox.self();
 
         OtpErlangTuple formatted_msg = new OtpErlangTuple(msg);
 //        mbox.send("primary",formatted_msg);
@@ -270,7 +274,7 @@ public class MessageManager {
      * @param board: String of the board name
      */
 
-    public int sendCreateTask(Task task, String board) throws Exception {
+    public static int sendCreateTask(Task task, String board) throws Exception {
 
         if(board.isEmpty()){
             System.err.println("CREATE TASK: Empty strings are not allowed for board name!");
@@ -293,7 +297,7 @@ public class MessageManager {
         msg[0] = new OtpErlangAtom("create_task");
         msg[1] = formatted_task;
         msg[2] = new OtpErlangAtom("primary");
-        msg[3] = this.mbox.self();
+        msg[3] = mbox.self();
 
         OtpErlangTuple formatted_msg = new OtpErlangTuple(msg);
 
@@ -329,7 +333,7 @@ public class MessageManager {
      * @param toStage: integer that specify the number of the new stage
      */
 
-    public void sendMoveTask(String board, int taskID, int toStage, String desc) throws Exception {
+    public static void sendMoveTask(String board, int taskID, int toStage, String desc) throws Exception {
 
         if(board.isEmpty()){
             System.err.println("MOVE_TASK: Empty strings are not allowed for board name!");
@@ -352,7 +356,7 @@ public class MessageManager {
         msg[0] = new OtpErlangAtom("update_task");
         msg[1] = formatted_move;
         msg[2] = new OtpErlangAtom("primary");
-        msg[3] = this.mbox.self();
+        msg[3] = mbox.self();
 
         OtpErlangTuple formatted_msg = new OtpErlangTuple(msg);
 
@@ -385,7 +389,7 @@ public class MessageManager {
         }
     }
 
-    public boolean sendDelete(){
+    public static boolean sendDelete(){
         //todo send delete task message
         return true;
     }

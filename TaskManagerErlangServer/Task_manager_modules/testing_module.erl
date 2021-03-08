@@ -24,6 +24,29 @@ client_test(Title, PID_server) ->
   PID_server ! {create_task,  {"Magicboard", "task di prova", "2021-12-12", 0, "Task", "Salume Magico", "Management"}, primary, self()}.
 %PID_server ! {update_task,  {2,1}, primary, self()}.
 
+test_recovery() ->
+  io:format("Starting~n"),
+  PID_primary = spawn('erlang-server@172.18.0.162', start_module, init, [[], primary]),
+%%  timer:sleep(1000),
+%%
+%%  %Spawn multiple secondary nodes
+  PID_secondary = spawn('erlang-server@172.18.0.163', start_module, init, [[PID_primary], secondary]),
+%%  PID_secondary3 = spawn(?MODULE, init, [[PID_primary], secondary]),
+%%  timer:sleep(1000),
+%%  PID_secondary2 = spawn(?MODULE, init, [[PID_primary], secondary]),
+%%  timer:sleep(1000),
+%%  PID_secondary4 = spawn(?MODULE, init, [[PID_primary], secondary]),
+%%  % register(primary_process, PID_primary),
+%%  timer:sleep(2000),
+  io:format("----------------- TESTING HOST FAILURE ------------------~n"),
+  timer:sleep(2000),
+  exit(PID_secondary, testing_election),
+  testing_module:client_test("A", PID_primary),
+  timer:sleep(50000),
+  io:format("------------------- SECONDARY IS UP ------------------~n"),
+  spawn('erlang-server@172.18.0.163', start_module, init, [[PID_primary], secondary]).
+
+
 start() ->
   odbc:start(),
   Board = {"0", "Magicboard"},

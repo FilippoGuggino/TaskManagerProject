@@ -61,10 +61,11 @@ build-node1:
 	cp listener_responder.erl alpine-mysql1/erlang-src/listener_responder.erl
 	docker build -t distributed-systems/alpine-mysql1 ./alpine-mysql1
 
-	docker run -it --name mysql1 --net DistributedSystems --ip 172.18.0.162 -p 3306:3306 -v $(shell pwd)/alpine-mysql1:/app -e MYSQL_DATABASE=TaskOrganizer -e MYSQL_USER=distributed -e MYSQL_PASSWORD=password -e MYSQL_ROOT_PASSWORD='password' -e FUN='$(FUN)' distributed-systems/alpine-mysql1
+	docker run -dit --name mysql1 --net DistributedSystems --ip 172.18.0.162 -p 3306:3306 -v $(shell pwd)/alpine-mysql1:/app -e MYSQL_DATABASE=TaskOrganizer -e MYSQL_USER=distributed -e MYSQL_PASSWORD=password -e MYSQL_ROOT_PASSWORD='password' -e FUN='$(FUN)' distributed-systems/alpine-mysql1
 
 	docker cp odbc.ini mysql1:/etc/odbc.ini
 	docker cp odbcinst.ini mysql1:/etc/odbcinst.ini
+	docker cp ../TaskManagerErlangServer mysql1:/
 
 build-node2:
 	$(MAKE) clean-node2
@@ -72,10 +73,11 @@ build-node2:
 	cp listener_responder.erl alpine-mysql2/erlang-src/listener_responder.erl
 	docker build -t distributed-systems/alpine-mysql2 ./alpine-mysql2
 
-	docker run -it --name mysql2 --net DistributedSystems --ip 172.18.0.163 -v $(shell pwd)/alpine-mysql2:/app -e MYSQL_DATABASE=TaskOrganizer -e MYSQL_USER=distributed -e MYSQL_PASSWORD=password -e MYSQL_ROOT_PASSWORD=password -e TEST=true -e FUN='$(FUN)' distributed-systems/alpine-mysql2
+	docker run -dit --name mysql2 --net DistributedSystems --ip 172.18.0.163 -v $(shell pwd)/alpine-mysql2:/app -e MYSQL_DATABASE=TaskOrganizer -e MYSQL_USER=distributed -e MYSQL_PASSWORD=password -e MYSQL_ROOT_PASSWORD=password -e TEST=true -e FUN='$(FUN)' distributed-systems/alpine-mysql2
 
 	docker cp odbc.ini mysql2:/etc/odbc.ini
 	docker cp odbcinst.ini mysql2:/etc/odbcinst.ini
+	docker cp ../TaskManagerErlangServer mysql2:/
 
 build:
 	$(MAKE) clean

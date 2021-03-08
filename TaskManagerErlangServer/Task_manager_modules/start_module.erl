@@ -14,29 +14,8 @@ start_localhost() ->
 %This is a testing method to try multiple processes
 start() ->
      io:format("Starting~n"),
-     PID_primary = spawn('erlang-server@172.18.0.162', start_module, init, [[], primary]),
-%%  timer:sleep(1000),
-%%
-%%  %Spawn multiple secondary nodes
-     PID_secondary = spawn('erlang-server@172.18.0.163', start_module, init, [[PID_primary], secondary]),
-%%  PID_secondary3 = spawn(?MODULE, init, [[PID_primary], secondary]),
-%%  timer:sleep(1000),
-%%  PID_secondary2 = spawn(?MODULE, init, [[PID_primary], secondary]),
-%%  timer:sleep(1000),
-%%  PID_secondary4 = spawn(?MODULE, init, [[PID_primary], secondary]),
-%%  % register(primary_process, PID_primary),
-%%  timer:sleep(2000),
-	io:format("----------------- TESTING HOST FAILURE ------------------~n"),
-     timer:sleep(2000),
-	exit(PID_secondary, testing_election),
-	testing_module:client_test("A", PID_primary),
-	timer:sleep(50000),
-	io:format("------------------- SECONDARY IS UP ------------------~n"),
-	spawn('erlang-server@172.18.0.163', start_module, init, [[PID_primary], secondary]).
-	%spawn('erlang-server@172.18.0.163', start_module, init, [[PID_primary], secondary]).
-%%     exit(PID_primary, testing_election).
-% spawn(?MODULE, client_test, ["Ciao", PID_primary]).
-
+     PID_primary = spawn('erlang-server@172.18.0.162', start_module, init, [[], primary]).
+     %PID_secondary = spawn('erlang-server@172.18.0.163', start_module, init, [[PID_primary], secondary]).
 
 %Stating node -
 % Primary: will also connect to RabbitMQ
@@ -49,6 +28,7 @@ init(List_of_hosts, Server_type) ->
           primary ->
           	   register(listener_loop_process, self()),
                io:format("~p: sono il primario~n", [self()]),
+               reset_rabbitmq(),
                init_rabbitmq(),
                listener_loop([[]], primary, false, true);
                % This host is a Secondary
@@ -70,6 +50,18 @@ init(List_of_hosts, Server_type) ->
                     exit(cant_connect_to_primary)
                end
      end.
+
+reset_rabbitmq() ->
+     application:ensure_started(amqp_client),
+     {ok, Connection} = amqp_connection:start(#amqp_params_network{host = "172.18.0.160"}),
+     {ok, Channel} = amqp_connection:open_channel(Connection),
+     
+     Delete = #'queue.delete'{queue = <<"primary_queue">>},
+     #'queue.delete_ok'{} = amqp_channel:call(Channel, Delete),
+     %% Close the channel
+     amqp_channel:close(Channel),
+     %% Close the connection
+     amqp_connection:close(Connection).
 
 init_rabbitmq() ->
      % Start connection with RabbitMQ

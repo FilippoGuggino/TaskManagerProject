@@ -1,5 +1,8 @@
 package taskorganizer.webservice.TaskOrganizerWebService;
 
+import com.ericsson.otp.erlang.OtpErlangDecodeException;
+import com.ericsson.otp.erlang.OtpErlangExit;
+
 import java.io.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -13,38 +16,45 @@ import javax.servlet.annotation.*;
 @WebServlet(name = "BoardServlet", value = "/Board")
 public class BoardServlet extends HttpServlet{
 
-    MessageManager manager;
-
     public void init() {
-        //this.manager = new MessageManager();
     }
 
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 
+        UpdatePackage boards = null;
+
+        try {
+            String board_title = request.getParameter("selectBoard");
+            System.out.println(board_title);
+            boards = MessageManager.loadTasks(board_title);
+        } catch (OtpErlangDecodeException | OtpErlangExit e) {
+            e.printStackTrace();
+        }
+
         HttpSession session = request.getSession(true);
-        String board = request.getParameter("selectBoard");
-
-        session.setAttribute("currentBoard",board);
-
+//        String board = request.getParameter("selectBoard");
+//
+//        session.setAttribute("currentBoard",board);
+//
         ArrayList<Task> backlog_tasks = new ArrayList<Task>();
         ArrayList<Task> doing_tasks = new ArrayList<Task>();
         ArrayList<Task> quality_check_tasks = new ArrayList<Task>();
         ArrayList<Task> done_tasks = new ArrayList<Task>();
-
-        //start test
-        String date_test = "2021-03-09";
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-        Date date = new Date();
-        try {
-            date = formatter.parse(date_test);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        Task Ciao = new Task("Test1","MANAGEMENT","Questa è una task di esempio",date,"admin");
-        backlog_tasks.add(Ciao);
-        doing_tasks.add(Ciao);
-        quality_check_tasks.add(Ciao);
-        done_tasks.add(Ciao);
+//
+//        //start test
+//        String date_test = "2021-03-09";
+//        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+//        Date date = new Date();
+//        try {
+//            date = formatter.parse(date_test);
+//        } catch (ParseException e) {
+//            e.printStackTrace();
+//        }
+//        Task Ciao = new Task("Test1","MANAGEMENT","Questa è una task di esempio",date,"admin");
+//        backlog_tasks.add(Ciao);
+//        doing_tasks.add(Ciao);
+//        quality_check_tasks.add(Ciao);
+//        done_tasks.add(Ciao);
         //end test
 
         //retrieve from sql database

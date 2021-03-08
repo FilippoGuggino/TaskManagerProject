@@ -124,6 +124,7 @@ listener_loop([List_of_hosts], Server_type, Sent_heartbeat, Election_ready) ->
 
      % ------------- REQUEST SERVICE MESSAGE -----------------
           {Operation, Params, Primary_info, From} ->
+               io:format("~p: Received ~p operation~n", [self(), Operation]),
                New_sent_heartbeat = false,
                New_server_type = Server_type,
                New_election_ready = Election_ready,
@@ -326,6 +327,7 @@ db_manager_loop(From, Operation, Param, Primary_info, List_of_hosts, Listener_pr
                send_data_to_client(From, Data);
 
           load_tasks ->
+               io:format("~p: Received load_tasks for board=~p ~n", [self(), Params]),
                Data = load_tasks_db(Params),
                send_data_to_client(From, Data);
 

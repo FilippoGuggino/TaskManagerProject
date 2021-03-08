@@ -60,13 +60,13 @@ public class RabbitMQManager {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        MessageManager man = new MessageManager();
-        try {
-            man.test();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+//        Test connection between web-server and erlang-server
+//        MessageManager man = new MessageManager();
+//        try {
+//            man.test();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
     }
 
 
@@ -131,6 +131,5 @@ public class RabbitMQManager {
             e.printStackTrace();
         }
         return pid;
-
     }
 }
