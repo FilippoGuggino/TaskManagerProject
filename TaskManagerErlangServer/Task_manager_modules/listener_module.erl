@@ -216,9 +216,11 @@ broadcast_or_ack(From, Operation, Params, Primary_info, List_of_hosts, Listener_
                case Operation of
                     create_task ->
                          utility_module:send_update_to_rabbitmq(ack_create_task, Params, element(2, Params)),
+                         From! {ack_create_task, Params},
                          ok;
                     update_task ->
                          utility_module:send_update_to_rabbitmq(ack_update_task, Params, element(2, Params)),
+                         From! {ack_update_task, Params},
                          % TODO send_update_to_rabbitmq(Operation, Params, Board_title) -> per guggio: {Operation, Params}
                          ok;
                     _ ->
