@@ -39,11 +39,7 @@ public class CreateServlet extends HttpServlet {
             e.printStackTrace();
         }
 
-        HttpSession session = request.getSession(true);
-        String board_title = (String) session.getAttribute("currentBoard");
-
-        request.setAttribute("selectBoard",  board_title);
-        new BoardServlet().doGet(request, response);
+        response.sendRedirect("/TaskOrganizerWebService_war/Board?selectBoard="+boardTitle);
     }
 
     @Override

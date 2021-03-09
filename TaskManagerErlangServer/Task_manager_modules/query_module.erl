@@ -83,6 +83,7 @@ load_tasks_db( Params) ->
 
 %{Board title, task title, new stage id }
 update_task_db(Params) ->
+  io:format("ciao: ~p~n", [Params]),
   {ok,Ref_to_db} = odbc:connect("dsn=test_;server=localhost;database=TaskOrganizer;user=root;", []),
   odbc:param_query(Ref_to_db, "UPDATE tasks SET stage_id = ?, last_update_time=?  WHERE task_title = ? AND board_title = ?",
     [{sql_integer,

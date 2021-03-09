@@ -11,8 +11,10 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <html>
 <link rel="stylesheet" href="css/board.css">
+
 <head>
     <title>Board overview</title>
+    <script src="javascript/interface.js"></script>
     <script>
         function updateBoardManager() {
             var serverSocket = new WebSocket("ws://localhost:8080/TaskOrganizerWebService_war/websocketendpoint");
@@ -22,8 +24,16 @@
             // Receives update from server
             serverSocket.onmessage = function(event)
             {
-                alert(event.data);
-                // TODO update task according to the message
+                var jsonobj = JSON.parse(event.data);
+                if(jsonobj.operation === "create_task")
+                    addTask(jsonobj.task_title,
+                        jsonobj.task_type,
+                        jsonobj.task_description,
+                        jsonobj.expiration_date,
+                        jsonobj.task_creator);
+                else if(jsonobj.operation === "update_task"){
+                    //moveTask()
+                }
             }
 
             // Send the selected board to the server (meaning that I am interested

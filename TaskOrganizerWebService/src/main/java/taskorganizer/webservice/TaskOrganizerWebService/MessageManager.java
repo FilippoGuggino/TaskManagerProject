@@ -96,7 +96,7 @@ public class MessageManager {
      * @return : generic erlang object received from the primary
      */
     private static OtpErlangObject sendAndWaitForResponse(OtpErlangObject obj) {
-        System.out.println("send message: "+  obj.toString() +"   to " + primaryPid.toString());
+        //System.out.println("send message: "+  obj.toString() +"   to " + primaryPid.toString());
         OtpErlangObject response = null;
         while(response == null){
             mbox.send(primaryPid, obj);
@@ -106,12 +106,12 @@ public class MessageManager {
                     System.out.println("Probably the primary is down... Fetching new primary info");
                     primaryPid = RabbitMQManager.fetchPrimary();
                 }
-                System.out.println("ciao: "+ response.toString());
+                //System.out.println("ciao: "+ response.toString());
             } catch (OtpErlangExit | OtpErlangDecodeException e) {
                 e.printStackTrace();
             }
         }
-        System.out.println("received response");
+        System.out.println("Received response: " + response);
         return response;
     }
 
@@ -345,14 +345,11 @@ public class MessageManager {
         OtpErlangObject[] Task = new OtpErlangObject[3];
         Task[0] = new OtpErlangString(board);
         Task[1] = new OtpErlangString(taskTitle);
-        Task[2] = new OtpErlangString(Integer.toString(toStage));
-
-
-        OtpErlangTuple formatted_move = new OtpErlangTuple(Task);
+        Task[2] = new OtpErlangInt(toStage);
 
         OtpErlangObject[] msg = new OtpErlangObject[4];
         msg[0] = new OtpErlangAtom("update_task");
-        msg[1] = formatted_move;
+        msg[1] = new OtpErlangTuple(Task);
         msg[2] = new OtpErlangAtom("primary");
         msg[3] = mbox.self();
 
@@ -366,7 +363,9 @@ public class MessageManager {
         if (response instanceof OtpErlangTuple) {
             response_mess = (OtpErlangTuple) response;
             if (response_mess.elementAt(0).toString().equals("ack_update_task")) {
-                if (response_mess.elementAt(1).toString().equals(taskTitle)){
+                OtpErlangTuple updateInfo = (OtpErlangTuple) response_mess.elementAt(1);
+                taskTitle = ((OtpErlangString)updateInfo.elementAt(2)).stringValue();
+                if (taskTitle.equals(taskTitle)){
                     System.out.println("MOVE_TASK: ACK and task title correctly received");
                     return;
                 }
