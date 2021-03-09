@@ -21,12 +21,12 @@ public class BoardServlet extends HttpServlet{
 
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 
-        UpdatePackage boards = null;
+        UpdatePackage boardInfo = null;
 
         try {
             String board_title = request.getParameter("selectBoard");
             System.out.println(board_title);
-            boards = MessageManager.loadTasks(board_title);
+            boardInfo = MessageManager.loadTasks(board_title);
         } catch (OtpErlangDecodeException | OtpErlangExit e) {
             e.printStackTrace();
         }
@@ -36,10 +36,11 @@ public class BoardServlet extends HttpServlet{
 //
 //        session.setAttribute("currentBoard",board);
 //
-        ArrayList<Task> backlog_tasks = new ArrayList<Task>();
-        ArrayList<Task> doing_tasks = new ArrayList<Task>();
-        ArrayList<Task> quality_check_tasks = new ArrayList<Task>();
-        ArrayList<Task> done_tasks = new ArrayList<Task>();
+
+        ArrayList<Task> backlog_tasks = boardInfo.getBacklog();
+        ArrayList<Task> doing_tasks = boardInfo.getDoing();
+        ArrayList<Task> quality_check_tasks = boardInfo.getQualityCheck();
+        ArrayList<Task> done_tasks = boardInfo.done_tasks;
 //
 //        //start test
 //        String date_test = "2021-03-09";

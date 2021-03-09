@@ -4,46 +4,25 @@ CREATE database if not Exists TaskOrganizer;
 
 use TaskOrganizer;
 
- 
-
- 
-
- 
-
 CREATE TABLE IF NOT EXISTS boards (
     board_title VARCHAR(255) PRIMARY KEY,
     last_update_time VARCHAR(255) not null
 );
 
- 
-
- 
-
- 
-
-CREATE TABLE IF NOT EXISTS stages (
-    stage_id INT AUTO_INCREMENT,
-    stage_title VARCHAR(255) NOT NULL,
-    board_title VARCHAR(255),
-    last_update_time VARCHAR(255) not null,
-    primary key (stage_id, board_title),
-    foreign key (board_title)
-        references boards(board_title)
-        on update cascade
-        on delete cascade
-);
-
- 
 
 CREATE TABLE IF NOT EXISTS tasks (
-    task_id INT AUTO_INCREMENT,
+    board_title VARCHAR(255) NOT NULL,
     task_description VARCHAR(255) NOT NULL,
     expiration_date DATE,
-    stage_id INT,
+    stage_id INT, -- From 0 to 3
+    task_title VARCHAR(255) NOT NULL,
+    author VARCHAR(255) NOT NULL,
+    type VARCHAR(255) NOT NULL,
     last_update_time VARCHAR(255) not null,
-    primary key (task_id),
-    foreign key (stage_id)
-        references stages(stage_id)
+
+    primary key (task_title, board_title),
+    foreign key (board_title)
+        references boards(board_title)
         on update cascade
         on delete cascade
 );

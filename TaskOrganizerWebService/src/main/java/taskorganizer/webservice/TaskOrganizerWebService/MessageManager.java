@@ -155,35 +155,39 @@ public class MessageManager {
 
                 OtpErlangTuple single_task = (OtpErlangTuple) it.next();
 
-                String exp_date_string = ((OtpErlangString)single_task.elementAt(1)).stringValue();
+                String exp_date_string = ((OtpErlangString)single_task.elementAt(2)).stringValue();
                 SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
                 Date exp_date;
 
                 try {
-
                     exp_date = formatter.parse(exp_date_string);
 
                     // Received message format: Description, expiration date, stage id, title, creator, type
 
-                    Task task_element = new Task(single_task.elementAt(3).toString(),single_task.elementAt(5).toString(),
-                            single_task.elementAt(0).toString(),exp_date,single_task.elementAt(4).toString());
+                    Task task_element = new Task(single_task.elementAt(3).toString(),
+                            single_task.elementAt(5).toString(),
+                            single_task.elementAt(0).toString(),
+                            exp_date,
+                            single_task.elementAt(4).toString());
 
-                    String stage_id_s = single_task.elementAt(2).toString();
-                    int stage_id = Integer.parseInt(stage_id_s);
+                    String stage_id_s = single_task.elementAt(3).toString();
 
-                    task_element.setStage_index(stage_id);
+                    task_element.setStage_index(Integer.parseInt(stage_id_s));
 
-                    if (stage_id == 0){
-                        backlog_task_list.add(task_element);
-                    }
-                    if (stage_id == 1){
-                        doing_task_list.add(task_element);
-                    }
-                    if (stage_id == 2){
-                        quality_check_task_list.add(task_element);
-                    }
-                    if (stage_id == 3){
-                        done_task_list.add(task_element);
+                    int stageId = Integer.parseInt(stage_id_s)%4;
+                    switch (stageId){
+                        case 0:
+                            backlog_task_list.add(task_element);
+                            break;
+                        case 1:
+                            doing_task_list.add(task_element);
+                            break;
+                        case 2:
+                            quality_check_task_list.add(task_element);
+                            break;
+                        case 3:
+                            done_task_list.add(task_element);
+                            break;
                     }
                 } catch (ParseException e) {
                     e.printStackTrace();
