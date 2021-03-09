@@ -147,12 +147,15 @@ public class MessageManager {
         ArrayList<Task> done_task_list = new ArrayList<>();
 
         if (response instanceof OtpErlangTuple) {
+
             tasksTuple = (OtpErlangTuple) response;
             OtpErlangList tasksList = (OtpErlangList) tasksTuple.elementAt(0);
+
             for (Iterator<OtpErlangObject> it = tasksList.iterator(); it.hasNext(); ) {
+
                 OtpErlangTuple single_task = (OtpErlangTuple) it.next();
 
-                String exp_date_string = ((OtpErlangString)single_task.elementAt(2)).stringValue();
+                String exp_date_string = ((OtpErlangString)single_task.elementAt(1)).stringValue();
                 SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
                 Date exp_date;
 
@@ -160,21 +163,13 @@ public class MessageManager {
 
                     exp_date = formatter.parse(exp_date_string);
 
-                    // Received message format: task id, Description, expiration date, stage id, title, creator, type
+                    // Received message format: Description, expiration date, stage id, title, creator, type
 
-                    Task task_element = new Task(single_task.elementAt(4).toString(),single_task.elementAt(6).toString(),
-                            single_task.elementAt(1).toString(),exp_date,single_task.elementAt(5).toString());
+                    Task task_element = new Task(single_task.elementAt(3).toString(),single_task.elementAt(5).toString(),
+                            single_task.elementAt(0).toString(),exp_date,single_task.elementAt(4).toString());
 
-                    //set task id for database purposes
-                    task_element.setID(Integer.parseInt(single_task.elementAt(0).toString()));
-
-                    String stage_id_s = single_task.elementAt(3).toString();
+                    String stage_id_s = single_task.elementAt(2).toString();
                     int stage_id = Integer.parseInt(stage_id_s);
-
-                    //setting integral stage number for database purposes
-                    task_element.setIntegralStage(stage_id);
-
-                    stage_id = stage_id % 4;
 
                     task_element.setStage_index(stage_id);
 
@@ -274,7 +269,7 @@ public class MessageManager {
      * @param board: String of the board name
      */
 
-    public static int sendCreateTask(Task task, String board) throws Exception {
+    public static void sendCreateTask(Task task, String board) throws Exception {
 
         if(board.isEmpty()){
             System.err.println("CREATE TASK: Empty strings are not allowed for board name!");
@@ -310,7 +305,8 @@ public class MessageManager {
             response_mess = (OtpErlangTuple) response;
             if (response_mess.elementAt(0).toString().equals("ack_create_task")) {
                 System.out.println("CREATE_TASK: ACK correctly received");
-                return Integer.parseInt(response_mess.elementAt(2).toString());
+                //TODO need to check task title?
+                return;
             }
             else {
                 System.err.println("CREATE_TASK: Incorrect ACK received from the primary server!");
@@ -329,26 +325,24 @@ public class MessageManager {
      * The function raise an exception when board name is empty, when ACK is incorrect and when the response message
      * is not an instance of an OtpErlangTuple.
      * @param board: String of the board name
-     * @param taskID: ID of the task that has to be inserted
+     * @param taskTitle: Title of the task that has to be inserted
      * @param toStage: integer that specify the number of the new stage
      */
 
-    public static void sendMoveTask(String board, int taskID, int toStage, String desc) throws Exception {
+    public static void sendMoveTask(String board, String taskTitle, int toStage) throws Exception {
 
         if(board.isEmpty()){
             System.err.println("MOVE_TASK: Empty strings are not allowed for board name!");
             throw new Exception("Empty strings are not allowed for board name");
         }
 
-        // Send this message format: board, task id, new stage id
+        // Send this message format: board, task title, new stage id
 
-        OtpErlangObject[] Task = new OtpErlangObject[4];
+        OtpErlangObject[] Task = new OtpErlangObject[3];
         Task[0] = new OtpErlangString(board);
-        Task[1] = new OtpErlangString(Integer.toString(taskID));
+        Task[1] = new OtpErlangString(taskTitle);
         Task[2] = new OtpErlangString(Integer.toString(toStage));
 
-        //TODO remove this last parameter called new_task_description
-        Task[3] = new OtpErlangString(desc);
 
         OtpErlangTuple formatted_move = new OtpErlangTuple(Task);
 
@@ -368,14 +362,13 @@ public class MessageManager {
         if (response instanceof OtpErlangTuple) {
             response_mess = (OtpErlangTuple) response;
             if (response_mess.elementAt(0).toString().equals("ack_update_task")) {
-                if (response_mess.elementAt(1).toString().equals(String.valueOf(taskID))){
-                    System.out.println("MOVE_TASK: ACK and TaskID correctly received");
+                if (response_mess.elementAt(1).toString().equals(taskTitle)){
+                    System.out.println("MOVE_TASK: ACK and task title correctly received");
                     return;
                 }
                 else {
-                    //TODO check id we need to cycle here
-                    System.err.println("MOVE_TASK: Incorrect TaskID from the primary server!");
-                    throw new Exception("Incorrect TaskID from the primary server");
+                    System.err.println("MOVE_TASK: Incorrect task title from the primary server!");
+                    throw new Exception("Incorrect task title from the primary server");
                 }
             }
             else {
