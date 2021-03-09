@@ -39,6 +39,7 @@ create_board_db(Params) ->
 
 %Params = {Board title, Description, expiration date, stage id, title, creator, type}
 create_task_db(Params)->
+  io:format("~p~n", [Params]),
   {ok,Ref_to_db} = odbc:connect("dsn=test_;server=localhost;database=TaskOrganizer;user=root;", []),
   odbc:param_query(Ref_to_db, "INSERT INTO tasks (board_title, task_description, expiration_date,
                                                 stage_id, task_title, author,  type, last_update_time)

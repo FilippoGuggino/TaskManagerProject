@@ -20,22 +20,24 @@ public class BoardServlet extends HttpServlet{
     }
 
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+        System.out.println("sono dentro board");
 
         UpdatePackage boardInfo = null;
+        String board_title = request.getParameter("selectBoard");
+        HttpSession session = request.getSession(true);
+        if (board_title != null)
+            session.setAttribute("currentBoard", board_title);
+        else{
+            board_title = (String) request.getAttribute("selectBoard");
+        }
 
         try {
-            String board_title = request.getParameter("selectBoard");
             System.out.println(board_title);
             boardInfo = MessageManager.loadTasks(board_title);
         } catch (OtpErlangDecodeException | OtpErlangExit e) {
             e.printStackTrace();
         }
-
-        HttpSession session = request.getSession(true);
 //        String board = request.getParameter("selectBoard");
-//
-//        session.setAttribute("currentBoard",board);
-//
 
         ArrayList<Task> backlog_tasks = boardInfo.getBacklog();
         ArrayList<Task> doing_tasks = boardInfo.getDoing();

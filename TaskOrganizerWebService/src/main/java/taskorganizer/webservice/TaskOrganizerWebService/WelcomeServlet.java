@@ -26,6 +26,7 @@ public class WelcomeServlet extends HttpServlet{
         } catch (OtpErlangDecodeException e) {
             e.printStackTrace();
         }
+
         request.setAttribute("board_list",boards);
         RequestDispatcher rd = request.getRequestDispatcher("/index.jsp");
         rd.forward(request,response);

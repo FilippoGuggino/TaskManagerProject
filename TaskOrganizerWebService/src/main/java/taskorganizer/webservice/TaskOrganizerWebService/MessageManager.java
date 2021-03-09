@@ -174,7 +174,7 @@ public class MessageManager {
 
                     task_element.setStage_index(Integer.parseInt(stage_id_s));
 
-                    int stageId = Integer.parseInt(stage_id_s)%4;
+                    int stageId = Integer.parseInt(stage_id_s);
                     switch (stageId){
                         case 0:
                             backlog_task_list.add(task_element);
@@ -273,7 +273,7 @@ public class MessageManager {
      * @param board: String of the board name
      */
 
-    public static void sendCreateTask(Task task, String board) throws Exception {
+    public static void createTask(Task task, String board) throws Exception {
 
         if(board.isEmpty()){
             System.err.println("CREATE TASK: Empty strings are not allowed for board name!");
@@ -286,7 +286,7 @@ public class MessageManager {
         Task[0] = new OtpErlangString(board);
         Task[1] = new OtpErlangString(task.isDescription());
         Task[2] = new OtpErlangString(task.expirationDate());
-        Task[3] = new OtpErlangString(Integer.toString(task.currentStage()));
+        Task[3] = new OtpErlangInt(task.currentStage());
         Task[4] = new OtpErlangString(task.isTitle());
         Task[5] = new OtpErlangString(task.isCreator());
         Task[6] = new OtpErlangString(task.isType());

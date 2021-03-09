@@ -172,6 +172,10 @@
             <form id="creation-form" action="CreateServlet">
                 <h2>Create a new task</h2>
 
+                <%
+                    out.println("<input type=\"hidden\" name=\"selectBoard\" value=\""+session.getAttribute("currentBoard")+"\">");
+                %>
+
                 <label for="task-name">Task name</label>
                 <input type="text" placeholder="Enter task name" name="task-name" id="task-name" required>
 

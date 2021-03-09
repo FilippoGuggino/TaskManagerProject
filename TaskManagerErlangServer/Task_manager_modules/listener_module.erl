@@ -215,8 +215,8 @@ broadcast_or_ack(From, Operation, Params, Primary_info, List_of_hosts, Listener_
                send_and_wait(Operation, Params, List_of_hosts, List_of_hosts),
                case Operation of
                     create_task ->
-                         utility_module:send_update_to_rabbitmq(ack_create_task, Params, element(2, Params)),
                          From! {ack_create_task, Params},
+                         utility_module:send_update_to_rabbitmq(ack_create_task, Params, element(2, Params)),
                          ok;
                     update_task ->
                          utility_module:send_update_to_rabbitmq(ack_update_task, Params, element(2, Params)),
@@ -232,6 +232,7 @@ broadcast_or_ack(From, Operation, Params, Primary_info, List_of_hosts, Listener_
 %%               From ! {Ack_operation, Params};
 %%
           secondary ->
+               io:format("~p: Sending ack to primary~n", [self()]),
                send_ack_to_primary(From, Params, Listener_process_id)
      end.
 
@@ -272,6 +273,7 @@ db_manager_loop(From, Operation, Param, Primary_info, List_of_hosts, Listener_pr
 
 
           create_task ->
+               io:format("~p: Received create_task ~n", [self()]),
                create_task_db(Params),
                broadcast_or_ack(From, Operation, Params, Primary_info, List_of_hosts, Listener_process_id);
 

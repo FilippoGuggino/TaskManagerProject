@@ -13,8 +13,8 @@ public class Task {
     boolean deleted;
 
     public Task(String title, String type, String description, Date expiration, String creator) {
-
         this.title = title;
+        // All tasks start at the Backlog stage
         this.stage_index = 0;
         this.type = type;
         this.description = description;

@@ -43,7 +43,7 @@ send_update_to_rabbitmq(Operation, Params, Board_title) ->
   Exchange_name = <<"topics_boards">>,
   
   Payload = term_to_binary({Operation, Params}),
-  
+  io:format(""),
   Publish = #'basic.publish'{exchange = Exchange_name, routing_key = Board_title},
   amqp_channel:cast(Channel, Publish, #amqp_msg{payload = Payload}),
   
