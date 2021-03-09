@@ -162,13 +162,13 @@ public class MessageManager {
                 try {
                     exp_date = formatter.parse(exp_date_string);
 
-                    // Received message format: Description, expiration date, stage id, title, creator, type
+                    // Received message format: Board_title, Description, expiration date, stage id, title, creator, type
 
-                    Task task_element = new Task(single_task.elementAt(3).toString(),
-                            single_task.elementAt(5).toString(),
-                            single_task.elementAt(0).toString(),
+                    Task task_element = new Task(single_task.elementAt(4).toString(),
+                            single_task.elementAt(6).toString(),
+                            single_task.elementAt(1).toString(),
                             exp_date,
-                            single_task.elementAt(4).toString());
+                            single_task.elementAt(5).toString());
 
                     String stage_id_s = single_task.elementAt(3).toString();
 

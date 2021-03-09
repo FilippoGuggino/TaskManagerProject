@@ -36,6 +36,17 @@
         <br><br>
         <input id ="submit_button" type="submit" value="Submit">
     </form>
+
+    <form action="createBoard" id="newBoard">
+        <p>Create a new board</p>
+
+        <label for="board-name">Board name</label>
+        <input type="text" placeholder="Enter new board name" name="board-name" id="board-name" required>
+
+        <br><br>
+        <input class="submit" type="submit" value="Create">
+    </form>
+
 </div>
 
 </body>
