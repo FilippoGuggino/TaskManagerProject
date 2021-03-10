@@ -17,10 +17,10 @@ function addTask(title, type, description, expiration, creator){
     var today = new Date();
     var compare_date = new Date(expiration);
     if (compare_date >= today){
-        newTaskDiv.style.color = "green";
+        newTaskDiv.style.borderColor = "green";
     }
     else {
-        newTaskDiv.style.color = "red";
+        newTaskDiv.style.borderColor = "red";
     }
 
     //title
@@ -119,7 +119,7 @@ function deleteTask(title,stage){
  * @returns True if the task has been found and moved, False if the task was not found.
  */
 
-function moveTask(title, from_stage, to_stage){
+function moveTask(title, to_stage){
 
     var task_cln;
     var tasks;
@@ -127,18 +127,12 @@ function moveTask(title, from_stage, to_stage){
 
     //select from_stage div
 
-    if (from_stage == 0){
-        tasks = document.getElementById('backlog-stage').children;
-    }
-    if (from_stage == 1){
-        tasks = document.getElementById('doing-stage').children;
-    }
-    if (from_stage == 2){
-        tasks = document.getElementById('quality-check-stage').children;
-    }
-    if (from_stage == 3){
-        tasks = document.getElementById('done-stage').children;
-    }
+    let tasks_backlog = document.getElementById('backlog-stage').children;
+    let tasks_doing = document.getElementById('doing-stage').children;
+    let tasks_quality = document.getElementById('quality-check-stage').children;
+    let tasks_done = document.getElementById('done-stage').children;
+
+    var all_tasks = [tasks_backlog, tasks_doing, tasks_quality, tasks_done];
 
     //select to_stage div
 
@@ -154,27 +148,37 @@ function moveTask(title, from_stage, to_stage){
     if (to_stage == 3){
         currentStage = document.getElementById("done-stage");
     }
-    for (let i = 1; i < tasks.length; i++){
-        var task = tasks[i].children;
-        if (task[0].textContent == title){
+    for (let j = 0; j<4; j++) {
 
-            var task_to_delete =  tasks[i];
-            task_cln = task_to_delete.cloneNode(true);
+        //scroll stage by stage
+        tasks = all_tasks[j];
 
-            if(from_stage == 0) {
-                document.getElementById('backlog-stage').removeChild(task_to_delete);
+        for (let i = 1; i < tasks.length; i++) {
+
+            var task = tasks[i].children;
+
+            if (task[0].textContent == title) {
+
+                var task_to_delete = tasks[i];
+                task_cln = task_to_delete.cloneNode(true);
+
+                //j is index of which stage we are searching
+                if (j == 0) {
+                    document.getElementById('backlog-stage').removeChild(task_to_delete);
+                }
+                if (j == 1) {
+                    document.getElementById('doing-stage').removeChild(task_to_delete);
+                }
+                if (j == 2) {
+                    document.getElementById('quality-check-stage').removeChild(task_to_delete);
+                }
+                if (j == 3) {
+                    document.getElementById('done-stage').removeChild(task_to_delete);
+                }
+
+                currentStage.appendChild(task_cln);
+                return true;
             }
-            if(from_stage == 1) {
-                document.getElementById('doing-stage').removeChild(task_to_delete);
-            }
-            if(from_stage == 2) {
-                document.getElementById('quality-check-stage').removeChild(task_to_delete);
-            }
-            if(from_stage == 3) {
-                document.getElementById('done-stage').removeChild(task_to_delete);
-            }
-            currentStage.appendChild(task_cln);
-            return true;
         }
     }
     return false;
