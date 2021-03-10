@@ -18,6 +18,7 @@ public class RabbitMQManager {
     private static Channel channel = null;
 
     static {
+        System.out.println("faccio partire cose");
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost("172.18.0.160");
         try {
@@ -41,6 +42,7 @@ public class RabbitMQManager {
         //UpdaterThread userUpdater = new UpdaterThread("host-" + ip);
 
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
+            System.out.println("Ho ricevuto un messaggio da rabbitmq");
             OtpInputStream otpIn = new OtpInputStream(delivery.getBody());
             try {
                 UserBoardConcurrentHashmap.updateClients(otpIn.read_any());

@@ -10,6 +10,7 @@ public class createBoard extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String boardName = request.getParameter("board-name");
+        System.out.println("caoindasodmas: " + boardName);
 
         try {
             MessageManager.sendCreateBoard(boardName);
@@ -19,7 +20,6 @@ public class createBoard extends HttpServlet {
 
 //        HttpSession session = request.getSession(true);
 //        session.setAttribute("currentBoard",boardName);
-        request.setAttribute("selectBoard",  boardName);
-        new BoardServlet().doGet(request, response);
+        response.sendRedirect("/TaskOrganizerWebService_war/Board?selectBoard="+boardName);
     }
 }

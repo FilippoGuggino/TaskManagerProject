@@ -20,7 +20,6 @@ public class BoardServlet extends HttpServlet{
     }
 
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        System.out.println("sono dentro board");
 
         UpdatePackage boardInfo = null;
         String board_title = request.getParameter("selectBoard");

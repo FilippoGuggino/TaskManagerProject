@@ -90,30 +90,37 @@ public class UserBoardConcurrentHashmap {
             System.out.println("complete tuple: " + tuple);
 
             OtpErlangAtom op = (OtpErlangAtom) tuple.elementAt(0);
+
+            ArrayList<Session> tmp = null;
+            String payload = null;
+            String boardTitle = null;
             // Check if correct message structure has been received
             if (op.atomValue().equals("ack_update_task")) {
                 System.out.println("received ack_update_task");
                 OtpErlangTuple taskTuple = (OtpErlangTuple) tuple.elementAt(1);
 
-                String boardTitle = ((OtpErlangString) taskTuple.elementAt(1)).stringValue();
-                ArrayList<Session> tmp = userBoards.get(boardTitle);
+                boardTitle = ((OtpErlangString) taskTuple.elementAt(1)).stringValue();
+
 
                 String taskTitle = ((OtpErlangString) taskTuple.elementAt(2)).stringValue();
                 String destStage = taskTuple.elementAt(3).toString();
 
-                String payload = new JSONObject()
+                System.out.println("title: " + taskTitle);
+                System.out.println("dest stage: " + destStage);
+
+                payload = new JSONObject()
                         .put("operation", "update_task")
                         .put("task_title", taskTitle)
                         .put("destination_stage", destStage)
                         .toString();
 
             }
-            if (op.atomValue().equals("ack_create_task")) {
+            else if (op.atomValue().equals("ack_create_task")) {
                 System.out.println("received ack_create_task");
                 OtpErlangTuple taskTuple = (OtpErlangTuple) tuple.elementAt(1);
 
-                String boardTitle = ((OtpErlangString) taskTuple.elementAt(1)).stringValue();
-                ArrayList<Session> tmp = userBoards.get(boardTitle);
+                boardTitle = ((OtpErlangString) taskTuple.elementAt(1)).stringValue();
+                tmp = userBoards.get(boardTitle);
 
                 String taskDescription = ((OtpErlangString) taskTuple.elementAt(2)).stringValue();
                 String expirationDateString = ((OtpErlangString)taskTuple.elementAt(3)).stringValue();
@@ -122,7 +129,7 @@ public class UserBoardConcurrentHashmap {
                 String taskCreator = ((OtpErlangString) taskTuple.elementAt(6)).stringValue();
                 String taskType = ((OtpErlangString) taskTuple.elementAt(7)).stringValue();
 
-                String payload = new JSONObject()
+                payload = new JSONObject()
                         .put("operation", "create_task")
                         .put("task_description", taskDescription)
                         .put("expiration_date", expirationDateString)
@@ -133,15 +140,16 @@ public class UserBoardConcurrentHashmap {
                         .toString();
 
                 //System.out.println(payload);
+            }
 
-                try {
-                    // Send update message to each interested client
-                    for(Session session: tmp){
-                            session.getBasicRemote().sendText(payload);
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
+            tmp = userBoards.get(boardTitle);
+            try {
+                // Send update message to each interested client
+                for(Session session: tmp){
+                    session.getBasicRemote().sendText(payload);
                 }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }else{
             System.out.println("Wrong message structure received from rabbitmq");

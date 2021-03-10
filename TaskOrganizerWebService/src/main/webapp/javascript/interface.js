@@ -148,12 +148,12 @@ function moveTask(title, to_stage){
     if (to_stage == 3){
         currentStage = document.getElementById("done-stage");
     }
-    for (let j = 0; j<4; j++) {
+    for (var j = 0; j<4; j++) {
 
         //scroll stage by stage
         tasks = all_tasks[j];
 
-        for (let i = 1; i < tasks.length; i++) {
+        for (var i = 1; i < tasks.length; i++) {
 
             var task = tasks[i].children;
 

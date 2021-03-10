@@ -32,7 +32,7 @@
                         jsonobj.expiration_date,
                         jsonobj.task_creator);
                 else if(jsonobj.operation === "update_task"){
-                    //moveTask()
+                    moveTask(jsonobj.task_title, jsonobj.destination_stage);
                 }
             }
 
@@ -87,9 +87,6 @@
                     out.println("</div>");
                 }
             }
-            else {
-                out.println("No tasks");
-            }
         %>
     </div>
     <div id="doing-stage">
@@ -114,9 +111,6 @@
 
                 }
             }
-            else {
-                out.println("No tasks");
-            }
         %>
     </div>
     <div id="quality-check-stage">
@@ -139,9 +133,6 @@
                     out.println("<p class=\"expiration\">Expires on: " + quality_check_tasks.get(i).expirationDate() + "</p>");
                     out.println("</div>");
                 }
-            }
-            else {
-                out.println("No tasks");
             }
         %>
     </div>
@@ -166,9 +157,6 @@
                     out.println("</div>");
 
                 }
-            }
-            else {
-                out.println("No tasks");
             }
         %>
     </div>

@@ -137,7 +137,6 @@ public class MessageManager {
 
         //send tasks request and wait for all tasks to arrive
         OtpErlangObject response = sendAndWaitForResponse(formatted_msg);
-        System.out.println(response);
         OtpErlangTuple tasksTuple;
 
         //components of UpdatePackage
@@ -150,31 +149,40 @@ public class MessageManager {
 
             tasksTuple = (OtpErlangTuple) response;
             OtpErlangList tasksList = (OtpErlangList) tasksTuple.elementAt(0);
+            OtpErlangTuple singleTaskTuple = null;
+            String taskTitle = null;
+            String taskType = null;
+            String taskDescription = null;
+            String taskCreator = null;
 
             for (Iterator<OtpErlangObject> it = tasksList.iterator(); it.hasNext(); ) {
 
-                OtpErlangTuple single_task = (OtpErlangTuple) it.next();
+                singleTaskTuple = (OtpErlangTuple) it.next();
 
-                String exp_date_string = ((OtpErlangString)single_task.elementAt(2)).stringValue();
+                String exp_date_string = ((OtpErlangString)singleTaskTuple.elementAt(2)).stringValue();
                 SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
                 Date exp_date;
 
                 try {
                     exp_date = formatter.parse(exp_date_string);
-
+                    taskTitle = ((OtpErlangString)singleTaskTuple.elementAt(4)).stringValue();
+                    taskType = ((OtpErlangString)singleTaskTuple.elementAt(6)).stringValue();
+                    taskDescription = ((OtpErlangString)singleTaskTuple.elementAt(1)).stringValue();
+                    taskCreator = ((OtpErlangString)singleTaskTuple.elementAt(5)).stringValue();
                     // Received message format: Board_title, Description, expiration date, stage id, title, creator, type
 
-                    Task task_element = new Task(single_task.elementAt(4).toString(),
-                            single_task.elementAt(6).toString(),
-                            single_task.elementAt(1).toString(),
+                    // Task(String title, String type, String description, Date expiration, String creator)
+                    Task task_element = new Task(taskTitle,
+                            taskType,
+                            taskDescription,
                             exp_date,
-                            single_task.elementAt(5).toString());
+                            taskCreator);
 
-                    String stage_id_s = single_task.elementAt(3).toString();
+                    String stageIdString = singleTaskTuple.elementAt(3).toString();
 
-                    task_element.setStage_index(Integer.parseInt(stage_id_s));
+                    task_element.setStage_index(Integer.parseInt(stageIdString));
 
-                    int stageId = Integer.parseInt(stage_id_s);
+                    int stageId = Integer.parseInt(stageIdString);
                     switch (stageId){
                         case 0:
                             backlog_task_list.add(task_element);
@@ -207,14 +215,15 @@ public class MessageManager {
      */
 
     public static void sendCreateBoard(String board) throws Exception {
-        if(board.isEmpty()){
+        if(board == null){
             System.err.println("Empty strings are not allowed for board name!");
             throw new Exception("Empty strings are not allowed for board name");
         }
 
-        OtpErlangObject[] board_title = new OtpErlangObject[2];
-        board_title[0] = new OtpErlangString(board);
-        OtpErlangTuple formatted_board_title = new OtpErlangTuple(board_title);
+        OtpErlangString boardTitle = new OtpErlangString(board);
+
+        //Message sent to Erlang {create_board, {"Board:Down secondary"}, primary, self()}
+        OtpErlangTuple formatted_board_title = new OtpErlangTuple(boardTitle);
 
         OtpErlangObject[] msg = new OtpErlangObject[4];
         msg[0] = new OtpErlangAtom("create_board");
