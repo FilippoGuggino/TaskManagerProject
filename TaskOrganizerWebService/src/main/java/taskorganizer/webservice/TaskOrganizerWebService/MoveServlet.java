@@ -12,20 +12,19 @@ import java.util.Date;
 public class MoveServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String taskName = request.getParameter("task-name-mov");
-        int taskStage = Integer.parseInt(request.getParameter("task-stage-mov"));
-        String boardTitle = request.getParameter("selectBoard");
+        String taskName = request.getParameter("task-name-move");
+        int taskStageDestination = Integer.parseInt(request.getParameter("task-stage-mov-to"));
+
+        HttpSession session = request.getSession(true);
+        String boardTitle = (String) session.getAttribute("currentBoard");
 
         try {
-            MessageManager.sendMoveTask(boardTitle,taskName,taskStage);
+            MessageManager.sendMoveTask(boardTitle,taskName,taskStageDestination);
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        HttpSession session = request.getSession(true);
-        String board_title = (String) session.getAttribute("currentBoard");
-        request.setAttribute("selectBoard",  board_title);
-        new BoardServlet().doGet(request, response);
+        response.sendRedirect("/TaskOrganizerWebService_war/Board?selectBoard="+boardTitle);
     }
 
     @Override

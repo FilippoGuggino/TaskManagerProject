@@ -8,7 +8,9 @@ import javax.json.JsonObject;
 import javax.json.bind.JsonbBuilder;
 import javax.websocket.Session;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -82,6 +84,7 @@ public class UserBoardConcurrentHashmap {
     }
 
     public static void updateClients(OtpErlangObject update){
+        System.out.println("forse faaaa: " + update);
         if (update instanceof OtpErlangTuple) {
             OtpErlangTuple tuple = (OtpErlangTuple) update;
             System.out.println("complete tuple: " + tuple);
@@ -89,16 +92,50 @@ public class UserBoardConcurrentHashmap {
             OtpErlangAtom op = (OtpErlangAtom) tuple.elementAt(0);
             // Check if correct message structure has been received
             if (op.atomValue().equals("ack_update_task")) {
-                OtpErlangString boardTitle = (OtpErlangString) tuple.elementAt(1);
-                ArrayList<Session> tmp = userBoards.get(boardTitle.toString());
+                System.out.println("received ack_update_task");
+                OtpErlangTuple taskTuple = (OtpErlangTuple) tuple.elementAt(1);
 
-                // TODO get true parameters from message
+                String boardTitle = ((OtpErlangString) taskTuple.elementAt(1)).stringValue();
+                ArrayList<Session> tmp = userBoards.get(boardTitle);
+
+                String taskTitle = ((OtpErlangString) taskTuple.elementAt(2)).stringValue();
+                String destStage = taskTuple.elementAt(3).toString();
+
                 String payload = new JSONObject()
-                        .put("task_title", "ciao")
-                        .put("destStage", "ciao")
+                        .put("operation", "update_task")
+                        .put("task_title", taskTitle)
+                        .put("destination_stage", destStage)
                         .toString();
 
+            }
+            if (op.atomValue().equals("ack_create_task")) {
+                System.out.println("received ack_create_task");
+                OtpErlangTuple taskTuple = (OtpErlangTuple) tuple.elementAt(1);
+
+                String boardTitle = ((OtpErlangString) taskTuple.elementAt(1)).stringValue();
+                ArrayList<Session> tmp = userBoards.get(boardTitle);
+
+                String taskDescription = ((OtpErlangString) taskTuple.elementAt(2)).stringValue();
+                String expirationDateString = ((OtpErlangString)taskTuple.elementAt(3)).stringValue();
+                String stageIndex = taskTuple.elementAt(4).toString();
+                String taskTitle = ((OtpErlangString) taskTuple.elementAt(5)).stringValue();
+                String taskCreator = ((OtpErlangString) taskTuple.elementAt(6)).stringValue();
+                String taskType = ((OtpErlangString) taskTuple.elementAt(7)).stringValue();
+
+                String payload = new JSONObject()
+                        .put("operation", "create_task")
+                        .put("task_description", taskDescription)
+                        .put("expiration_date", expirationDateString)
+                        .put("stage_index", stageIndex)
+                        .put("task_title", taskTitle)
+                        .put("task_creator", taskCreator)
+                        .put("task_type", taskType)
+                        .toString();
+
+                //System.out.println(payload);
+
                 try {
+                    // Send update message to each interested client
                     for(Session session: tmp){
                             session.getBasicRemote().sendText(payload);
                     }

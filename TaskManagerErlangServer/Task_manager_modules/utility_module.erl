@@ -39,13 +39,13 @@ send_update_to_rabbitmq(Operation, Params, Board_title) ->
   application:ensure_started(amqp_client),
   {ok, Connection} = amqp_connection:start(#amqp_params_network{host = "172.18.0.160"}),
   {ok, Channel} = amqp_connection:open_channel(Connection),
-  
+  io:format("Send operation: ~p with params: ~p and board_title: ~p to rabbitmq~n", [Operation, Params, Board_title] ),
   Exchange_name = <<"topics_boards">>,
   
   Payload = term_to_binary({Operation, Params}),
-  io:format(""),
   Publish = #'basic.publish'{exchange = Exchange_name, routing_key = Board_title},
   amqp_channel:cast(Channel, Publish, #amqp_msg{payload = Payload}),
+  io:format("sent message to rabbitmq~n"),
   
   %% Close the channel
   amqp_channel:close(Channel),

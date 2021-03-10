@@ -28,7 +28,7 @@ public class BoardServlet extends HttpServlet{
         if (board_title != null)
             session.setAttribute("currentBoard", board_title);
         else{
-            board_title = (String) request.getAttribute("selectBoard");
+            board_title = (String) session.getAttribute("currentBoard");
         }
 
         try {

@@ -41,9 +41,6 @@ public class RabbitMQManager {
         //UpdaterThread userUpdater = new UpdaterThread("host-" + ip);
 
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
-            String message = new String(delivery.getBody(), "UTF-8");
-            System.out.println(" [x] Received '" + message + "'");
-
             OtpInputStream otpIn = new OtpInputStream(delivery.getBody());
             try {
                 UserBoardConcurrentHashmap.updateClients(otpIn.read_any());
@@ -55,8 +52,7 @@ public class RabbitMQManager {
         try {
             System.out.println("Connected to RabbitMQ");
             channel.queueDeclare(QUEUE_NAME, false, false, false, null);
-            channel.basicConsume(QUEUE_NAME, true, deliverCallback, consumerTag -> {
-            });
+            channel.basicConsume(QUEUE_NAME, true, deliverCallback, consumerTag -> {});
         } catch (IOException e) {
             e.printStackTrace();
         }

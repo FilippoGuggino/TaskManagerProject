@@ -216,13 +216,10 @@ broadcast_or_ack(From, Operation, Params, Primary_info, List_of_hosts, Listener_
                case Operation of
                     create_task ->
                          From! {ack_create_task, Params},
-                         utility_module:send_update_to_rabbitmq(ack_create_task, Params, element(2, Params)),
-                         ok;
+                         utility_module:send_update_to_rabbitmq(ack_create_task, Params, element(2, Params));
                     update_task ->
-                         utility_module:send_update_to_rabbitmq(ack_update_task, Params, element(2, Params)),
                          From! {ack_update_task, Params},
-                         % TODO send_update_to_rabbitmq(Operation, Params, Board_title) -> per guggio: {Operation, Params}
-                         ok;
+                         utility_module:send_update_to_rabbitmq(ack_update_task, Params, element(2, Params));
                     _ ->
                          ok
                end;
@@ -320,6 +317,7 @@ db_manager_loop(From, Operation, Param, Primary_info, List_of_hosts, Listener_pr
                %odbc:disconnect(Ref_to_db);
 
           update_task ->
+               io:format("~p: Received update_task ~n", [self()]),
                update_task_db(Params),
                broadcast_or_ack(From, Operation, Params, Primary_info, List_of_hosts, Listener_process_id);
                % TODO send 'ack_update_task' back + send same ack message to rabbitmq
