@@ -221,7 +221,7 @@ broadcast_or_ack(From, Operation, Params, Primary_info, List_of_hosts, Listener_
                          From! {ack_update_task, Params},
                          utility_module:send_update_to_rabbitmq(ack_update_task, Params, element(2, Params));
                     _ ->
-                         ok
+                         From! {ack_create_board, Params}
                end;
           %Finally send data to client ACK or informations asked
 %%               send_update_to_clients(Params),
