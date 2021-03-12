@@ -14,13 +14,15 @@
 
 update_operation_id(Operation, Params, Primary_info, Operation_id) ->
      if
-          Primary_info == primary and (Operation == create_board or Operation == create_task or Operation == update_task) ->
+          ((Primary_info == primary) and ((Operation == create_board) or (Operation == create_task) or (Operation == update_task))) ->
                Update_operation_id = Operation_id + 1;
-          Primary_info == secondary and (Operation == create_board or Operation == create_task or Operation == update_task) ->
-               Updated_operation_id = element(1, Params);
-          _ ->
-               Updated_operation_id = Operation_id
+          ((Primary_info == secondary) and ((Operation == create_board) or (Operation == create_task) or (Operation == update_task))) ->
+               Update_operation_id = element(1, Params);
+          true ->
+               Update_operation_id = Operation_id
      end,
+     %io:format("Sono qui ahahahahahhahhahhahahahah ~n"),
+     %io:format(Update_operation_id),
      Update_operation_id.
 
 
@@ -149,6 +151,10 @@ listener_loop([List_of_hosts], Server_type, Sent_heartbeat, Election_ready, Oper
 
      % ------------------------ REQUEST SERVICE MESSAGE ---------------------------------------------
           {operation_id, OpID} ->
+          	    New_sent_heartbeat = false,
+               New_server_type = Server_type,
+               New_election_ready = Election_ready,
+               Updated_list_of_hosts = List_of_hosts,
                Updated_operation_id = OpID;
 
           {Operation, Params, Primary_info, From} ->
@@ -159,13 +165,16 @@ listener_loop([List_of_hosts], Server_type, Sent_heartbeat, Election_ready, Oper
 
                case Operation of
                     hosts_to_delete ->
+                    	Updated_operation_id = Operation_id,
                          io:format("Listener_loop: Host delete request recived~n"),
                          Updated_list_of_hosts = delete_hosts_from_list(List_of_hosts, Params),
                          io:format("Updated list ~n");
                     update_list ->
+                    	 Updated_operation_id = Operation_id,
                          io:format("~p: Updating list of hosts: ~p ~n", [self(), [From] ++ Params]),
                          Updated_list_of_hosts = [From] ++ Params;
                     _ ->
+                    	Updated_list_of_hosts = List_of_hosts,
                          Updated_operation_id = update_operation_id(Operation,Params, Primary_info, Operation_id),
                          spawn(?MODULE, db_manager_loop, [From, Operation, Params, Primary_info, List_of_hosts, self(), Updated_operation_id])
                end;
@@ -355,6 +364,7 @@ receive_acks(Params, List_of_hosts) ->
                end
      after 10000 ->
           io:format("Entered host recovery routine ~n"),
+          io:format("~p: FORRRRRRRRR  RRRR RRRR =~p ~n", [self(), Params]),
           host_register_recovery(List_of_hosts, Params),
           whereis(listener_loop_process) ! {hosts_to_delete, List_of_hosts, primary, self()},
           %SEND the response to client after recovery data are stored

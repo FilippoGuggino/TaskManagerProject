@@ -14,8 +14,15 @@ start_localhost() ->
 %This is a testing method to try multiple processes
 start() ->
      io:format("Starting~n"),
-     PID_primary = spawn('erlang-server@172.18.0.162', start_module, init, [[], primary]).
-     %PID_secondary = spawn('erlang-server@172.18.0.163', start_module, init, [[PID_primary], secondary]).
+     PID_primary = spawn('erlang-server@172.18.0.162', start_module, init, [[], primary]),
+     PID_secondary = spawn('erlang-server@172.18.0.163', start_module, init, [[PID_primary], secondary]),
+     testing_module:client_test("Pre_down", PID_primary),
+     timer:sleep(20000),
+     exit(PID_secondary, triste_morte),
+      %timer:sleep(5000),
+     testing_module:client_test("After_down", PID_primary),
+     timer:sleep(50000),
+     spawn('erlang-server@172.18.0.163', start_module, init, [[PID_primary], secondary]).
 
 %Stating node -
 % Primary: will also connect to RabbitMQ

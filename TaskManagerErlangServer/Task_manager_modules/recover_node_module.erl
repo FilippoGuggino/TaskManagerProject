@@ -67,8 +67,8 @@ recovery_routine(Process_id, Operation_id) ->
     true ->
       Data = getFirst(Data_query),
       io:format("------------ HOST FOUND: This host is in the recovery mode ~n"),
-      Time = element(1,Data),
-      io:format(Time)
+      Time = element(1,Data)
+      %io:format(Time)
   end,
   %Time = "0",
   %GET BOARD AND SEND BOARDS
@@ -88,6 +88,7 @@ recovery_routine(Process_id, Operation_id) ->
       send_and_wait(create_tasks, Tasks, [Process_id], [Process_id])
   end,
 
-  send_and_wait(operation_id, Operation_id, [Process_id], [Process_id]),
+  Process_id ! {operation_id, Operation_id},
+  %send_and_wait(operation_id, Operation_id, [Process_id], [Process_id]),
   %DELETE THE HOST FROM THE RECOVERY TABLE. (Only if all Data are OK)
   delete_host_from_recovery(Process_id).

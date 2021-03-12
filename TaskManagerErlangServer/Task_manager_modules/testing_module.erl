@@ -17,11 +17,12 @@ load_tasks() ->
 
 client_test(Title, PID_server) ->
   io:format("Client sending data!~n"),
-  PID_server ! {create_board, {"Board:Down secondary"}, primary, self()},
+  PID_server ! {create_board, {Title}, primary, self()},
+  %timer:sleep(500),
 % io:format("------------------Send data to SERVERS~n"),
 % PID_server ! {create_stage, {"Stage1", Title}, primary, self()},
 
-  PID_server ! {create_task,  {"Magicboard", "task di prova", "2021-12-12", 0, "Task", "Salume Magico", "Management"}, primary, self()}.
+  PID_server ! {create_task,  {Title, "task di prova", "2021-12-12", 0, "Task", "Salume Magico", "Management"}, primary, self()}.
 %PID_server ! {update_task,  {2,1}, primary, self()}.
 
 test_recovery() ->
