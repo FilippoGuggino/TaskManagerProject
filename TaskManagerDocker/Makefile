@@ -95,3 +95,72 @@ deploy-node2:
 deploy:
 	$(MAKE) deploy-node1
 	$(MAKE) deploy-node2
+
+start-single-webserver:
+	$(MAKE) start-webserver-1
+
+start-multiple-webserver:
+	$(MAKE) start-webserver-1
+	$(MAKE) start-webserver-2
+
+start-webserver-1:
+	docker stop tomcat-webserver-1
+	# Compile and create packege of new project
+	mvn package -f ../TaskOrganizerWebService
+
+	docker cp ../TaskOrganizerWebService/target/TaskOrganizerWebService-1.0-SNAPSHOT.war tomcat-webserver-1:/usr/local/tomcat/webapps
+
+	docker start tomcat-webserver-1
+
+	# Process needed to create an erlang node, theoretically this should start automatically at startup...
+	docker exec -dti tomcat-webserver-1 epmd
+
+build-webserver-1:
+	$(MAKE) clean-tomcat-webserver-1
+	docker build -t distributed-systems/tomcat-webserver-1 ./tomcat-webserver-1
+	docker run -dit --name tomcat-webserver-1 --net DistributedSystems --ip 172.18.0.151 -p 8080 -v $(shell pwd)/tomcat-webserver-1:/app  distributed-systems/tomcat-webserver-1
+	docker exec -i -w /usr/local/tomcat/ tomcat-webserver-1 /bin/sh -c 'cp -r webapps.dist/* webapps/'
+	docker cp ConfigTomcatDocker/context.xml tomcat-webserver-1:/usr/local/tomcat/webapps/manager/META-INF/
+	docker cp ConfigTomcatDocker/tomcat-users.xml tomcat-webserver-1:/usr/local/tomcat/conf
+	docker stop tomcat-webserver-1 || true
+
+clean-tomcat-webserver-1:
+	docker stop tomcat-webserver-1 || true
+	docker rm tomcat-webserver-1 || true
+	docker rmi tomcat-webserver-1 || true
+
+start-webserver-2:
+	docker stop tomcat-webserver-2
+	# Compile and create packege of new project
+	mvn package -f ../TaskOrganizerWebService
+
+	docker cp ../TaskOrganizerWebService/target/TaskOrganizerWebService-1.0-SNAPSHOT.war tomcat-webserver-2:/usr/local/tomcat/webapps
+
+	docker start tomcat-webserver-2
+
+	# Process needed to create an erlang node, theoretically this should start automatically at startup...
+	docker exec -dti tomcat-webserver-2 epmd
+
+build-webserver-2:
+	$(MAKE) clean-tomcat-webserver-2
+	docker build -t distributed-systems/tomcat-webserver-2 ./tomcat-webserver-2
+	docker run -dit --name tomcat-webserver-2 --net DistributedSystems --ip 172.18.0.152 -p 8080 -v $(shell pwd)/tomcat-webserver-2:/app  distributed-systems/tomcat-webserver-2
+	docker exec -i -w /usr/local/tomcat/ tomcat-webserver-2 /bin/sh -c 'cp -r webapps.dist/* webapps/'
+	docker cp ConfigTomcatDocker/context.xml tomcat-webserver-2:/usr/local/tomcat/webapps/manager/META-INF/
+	docker cp ConfigTomcatDocker/tomcat-users.xml tomcat-webserver-2:/usr/local/tomcat/conf
+	docker stop tomcat-webserver-2 || true
+
+clean-tomcat-webserver-2:
+	docker stop tomcat-webserver-2 || true
+	docker rm tomcat-webserver-2 || true
+	docker rmi distributed-systems/tomcat-webserver-2 || true
+
+build-haproxy:
+	$(MAKE) clean-haproxy
+	docker build -t distributed-systems/haproxy ./haproxy
+	docker run -it --name haproxy --net DistributedSystems --ip 172.18.0.150 --sysctl net.ipv4.ip_unprivileged_port_start=0 distributed-systems/haproxy
+
+clean-haproxy:
+	docker stop haproxy || true
+	docker rm haproxy || true
+	docker rmi distributed-systems/haproxy || true

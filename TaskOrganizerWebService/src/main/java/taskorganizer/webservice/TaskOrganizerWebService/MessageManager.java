@@ -1,29 +1,44 @@
 package taskorganizer.webservice.TaskOrganizerWebService;
 import com.ericsson.otp.erlang.*;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.concurrent.ExecutionException;
 
 import static java.lang.System.exit;
 
 public class MessageManager {
+    static String nameserver;
+    static String erlangCookie = "test";
+    static String erlangMailbox;
     static OtpNode webserver;
     static OtpMbox mbox;
     static OtpErlangPid primaryPid;
+    public static String ip = "";
 
     static{
+        resetErlangInterface();
+    }
+
+    private synchronized static void resetErlangInterface(){
         try {
-            webserver = new OtpNode("webservice@172.18.0.2", "test");
+            ip = InetAddress.getLocalHost().getHostAddress().toString();
+            nameserver = "webservice@"+ip;
+            erlangMailbox = "webmailbox-"+ip;
+            webserver = new OtpNode(nameserver, erlangCookie);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        mbox = webserver.createMbox("webserver");
-        mbox.registerName("webserver");
+        mbox = webserver.createMbox(erlangMailbox);
+        mbox.registerName(nameserver);
         System.out.println("Connecting to the primary...");
         primaryPid = RabbitMQManager.fetchPrimary();
+        System.out.println(primaryPid);
         if (webserver.ping(primaryPid.node(), 2000)){
             System.out.println("OK: Primary server is online!");
         }
@@ -33,7 +48,7 @@ public class MessageManager {
         }
     }
 
-    public static ArrayList<String> loadBoards() throws OtpErlangDecodeException {
+    public synchronized static ArrayList<String> loadBoards(){
         OtpErlangObject[] msg = new OtpErlangObject[4];
         msg[0] = new OtpErlangAtom("load_boards");
         msg[1] = new OtpErlangTuple(msg[0]);
@@ -48,7 +63,9 @@ public class MessageManager {
 
         if(response == null){
             System.out.println("An error occurred while communicating with the primary");
-            exit(1);
+            ArrayList tmp = new ArrayList<String>();
+            tmp.add("dasdsa");
+            return tmp;
         }
 
         if (response instanceof OtpErlangTuple) {
@@ -95,20 +112,31 @@ public class MessageManager {
      * @param obj: Erlang object to send to the primary
      * @return : generic erlang object received from the primary
      */
-    private static OtpErlangObject sendAndWaitForResponse(OtpErlangObject obj) {
+    private synchronized static OtpErlangObject sendAndWaitForResponse(OtpErlangObject obj) {
         //System.out.println("send message: "+  obj.toString() +"   to " + primaryPid.toString());
         OtpErlangObject response = null;
+        int i = 0;
         while(response == null){
+            System.out.println("sending message to "+ primaryPid);
             mbox.send(primaryPid, obj);
             try {
                 response = mbox.receive(2000);
+                System.out.println("received response " + response);
                 if(response == null){
                     System.out.println("Probably the primary is down... Fetching new primary info");
                     primaryPid = RabbitMQManager.fetchPrimary();
                 }
-                //System.out.println("ciao: "+ response.toString());
             } catch (OtpErlangExit | OtpErlangDecodeException e) {
                 e.printStackTrace();
+            }
+
+            i++;
+            if(i == 3){
+                System.out.println("An error occurred, primary seems unavailable, resetting connection...");
+                webserver.close();
+                mbox.close();
+                resetErlangInterface();
+                i = 0;
             }
         }
         System.out.println("Received response: " + response);
@@ -123,7 +151,7 @@ public class MessageManager {
      * @return an UpdatePackage that contains 4 arraylist, each one containing the tasks belonging to the
      * corresponding stage
      */
-    public static UpdatePackage loadTasks(String board) throws OtpErlangExit, OtpErlangDecodeException {
+    public synchronized static UpdatePackage loadTasks(String board) throws OtpErlangExit, OtpErlangDecodeException {
 
         OtpErlangObject board_title = new OtpErlangString(board);
         OtpErlangTuple formatted_board_title = new OtpErlangTuple(board_title);
@@ -214,7 +242,7 @@ public class MessageManager {
      * @param board: String of the board name
      */
 
-    public static void sendCreateBoard(String board) throws Exception {
+    public synchronized static void sendCreateBoard(String board) throws Exception {
         if(board == null){
             System.err.println("Empty strings are not allowed for board name!");
             throw new Exception("Empty strings are not allowed for board name");
@@ -282,7 +310,7 @@ public class MessageManager {
      * @param board: String of the board name
      */
 
-    public static void createTask(Task task, String board) throws Exception {
+    public synchronized static void createTask(Task task, String board) throws Exception {
 
         if(board.isEmpty()){
             System.err.println("CREATE TASK: Empty strings are not allowed for board name!");
@@ -342,7 +370,7 @@ public class MessageManager {
      * @param toStage: integer that specify the number of the new stage
      */
 
-    public static void sendMoveTask(String board, String taskTitle, int toStage) throws Exception {
+    public synchronized static void sendMoveTask(String board, String taskTitle, int toStage) throws Exception {
 
         if(board.isEmpty()){
             System.err.println("MOVE_TASK: Empty strings are not allowed for board name!");

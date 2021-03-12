@@ -1,6 +1,8 @@
 package taskorganizer.webservice.TaskOrganizerWebService;
 
 import com.rabbitmq.client.*;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;

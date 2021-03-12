@@ -124,7 +124,7 @@ listener_loop([List_of_hosts], Server_type, Sent_heartbeat, Election_ready) ->
 
      % ------------- REQUEST SERVICE MESSAGE -----------------
           {Operation, Params, Primary_info, From} ->
-               io:format("~p: Received ~p operation~n", [self(), Operation]),
+               io:format("~p: Received ~p operation from ~p~n", [self(), Operation, From]),
                New_sent_heartbeat = false,
                New_server_type = Server_type,
                New_election_ready = Election_ready,

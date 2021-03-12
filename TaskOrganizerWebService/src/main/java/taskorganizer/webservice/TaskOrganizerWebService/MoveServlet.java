@@ -15,8 +15,7 @@ public class MoveServlet extends HttpServlet {
         String taskName = request.getParameter("task-name-move");
         int taskStageDestination = Integer.parseInt(request.getParameter("task-stage-mov-to"));
 
-        HttpSession session = request.getSession(true);
-        String boardTitle = (String) session.getAttribute("currentBoard");
+        String boardTitle = request.getParameter("selectBoard");
 
         try {
             MessageManager.sendMoveTask(boardTitle,taskName,taskStageDestination);
@@ -24,7 +23,7 @@ public class MoveServlet extends HttpServlet {
             e.printStackTrace();
         }
 
-        response.sendRedirect("/TaskOrganizerWebService_war/Board?selectBoard="+boardTitle);
+        response.sendRedirect("/TaskOrganizerWebService-1.0-SNAPSHOT/Board?selectBoard="+boardTitle);
     }
 
     @Override

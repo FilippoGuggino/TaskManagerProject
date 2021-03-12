@@ -1,4 +1,5 @@
-<%@ page import="java.util.ArrayList" %><%--
+<%@ page import="java.util.ArrayList" %>
+<%@ page import="taskorganizer.webservice.TaskOrganizerWebService.MessageManager" %><%--
   Created by IntelliJ IDEA.
   User: Leonardo
   Date: 09/02/2021
@@ -13,6 +14,7 @@
 
 </head>
 <body>
+<% out.print("<p>Connected to " + MessageManager.ip + "</p>"); %>
 
 <%  ArrayList<String> board_list = (ArrayList<String>) request.getAttribute("board_list");
 %>

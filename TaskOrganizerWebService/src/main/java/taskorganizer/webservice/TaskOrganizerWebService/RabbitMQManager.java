@@ -6,40 +6,40 @@ import com.rabbitmq.client.*;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
-
-import static java.lang.System.exit;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class RabbitMQManager {
     private static String QUEUE_NAME;
     private static String EXCHANGE_NAME = "topics_boards";
 
     private static Connection connection = null;
-    private static Channel channel = null;
+    // This is the channel used to automatically consume updates coming from the primary
+    private static Channel channel;
+
+    private static ExecutorService executor
+            = Executors.newSingleThreadExecutor();
 
     static {
-        System.out.println("faccio partire cose");
+        System.out.println("inizializzo cose!!!");
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost("172.18.0.160");
         try {
             connection = factory.newConnection();
-            channel = connection.createChannel();
         } catch (TimeoutException | IOException e) {
             e.printStackTrace();
         }
-    }
 
-    // Create thread used to update the boards of connected users through AJAX
-    // Create queue dedicated to this host inside RabbitMQ
-    public static void initRabbitMQ() {
         String ip = "";
         try {
-            ip = InetAddress.getLocalHost().toString();
+            ip = InetAddress.getLocalHost().getHostAddress().toString();
         } catch (UnknownHostException e) {
             e.printStackTrace();
         }
-        QUEUE_NAME = "host-" + ip;
-        //UpdaterThread userUpdater = new UpdaterThread("host-" + ip);
+        QUEUE_NAME = "webserverqueue-" + ip;
 
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
             System.out.println("Ho ricevuto un messaggio da rabbitmq");
@@ -51,13 +51,23 @@ public class RabbitMQManager {
             }
         };
 
-        try {
+        try{
+            channel = connection.createChannel();
             System.out.println("Connected to RabbitMQ");
-            channel.queueDeclare(QUEUE_NAME, false, false, false, null);
+            // Queue will auto-delete if no consumers are attached to it
+            channel.queueDeclare(QUEUE_NAME, false, false, true, null);
             channel.basicConsume(QUEUE_NAME, true, deliverCallback, consumerTag -> {});
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    // Create thread used to update the boards of connected users through AJAX
+    // Create queue dedicated to this host inside RabbitMQ
+    public static void initRabbitMQ() {
+        //UpdaterThread userUpdater = new UpdaterThread("host-" + ip);
+
+
 //        Test connection between web-server and erlang-server
 //        MessageManager man = new MessageManager();
 //        try {
@@ -94,17 +104,17 @@ public class RabbitMQManager {
         };*/
 
     public synchronized static void createBinding(String boardTitle) {
-        try {
+        try (Channel channel = connection.createChannel();){
             channel.queueBind(QUEUE_NAME, EXCHANGE_NAME, boardTitle);
-        } catch (IOException e) {
+        } catch (IOException | TimeoutException e) {
             e.printStackTrace();
         }
     }
 
     public synchronized static void removeBinding(String boardTitle) {
-        try {
+        try (Channel channel = connection.createChannel();){
             channel.queueUnbind(QUEUE_NAME, EXCHANGE_NAME, boardTitle);
-        } catch (IOException e) {
+        } catch (IOException | TimeoutException e) {
             e.printStackTrace();
         }
     }
@@ -113,21 +123,66 @@ public class RabbitMQManager {
      * Fetch primary PID from rabbitmq
      * */
     public synchronized static OtpErlangPid fetchPrimary() {
-        OtpErlangPid pid = null;
-        try {
-            GetResponse response = null;
-            while (response == null) {
-                // get message from "primary_queue" without sending ann ACK back
-                // This will result with the message not being cancelled from the queue -> other web-server
-                // may need the same message
-                response = channel.basicGet("primary_queue", false);
+
+
+
+//        DeliverCallback deliverCallback = (consumerTag, delivery) -> {
+//            System.out.println("Ho ricevuto un messaggio da rabbitmq");
+//            OtpInputStream mess = new OtpInputStream(delivery.getBody());
+//            try {
+//                pid.set(mess.read_pid());
+//            } catch (OtpErlangDecodeException e) {
+//                e.printStackTrace();
+//            }
+//            System.out.println("Primary pid: " + pid.toString());
+//            channel.basicNack(delivery.getEnvelope().getDeliveryTag(), false, true);
+//        };
+
+//        try(Channel channel = connection.createChannel()){
+//            channel.basicConsume("primary_queue", false, "one_time_tag", new DefaultConsumer(channel) {
+//                @Override
+//                public void handleDelivery(String consumerTag,
+//                                           Envelope envelope,
+//                                           AMQP.BasicProperties properties,
+//                                           byte[] body)
+//                        throws IOException
+//                {
+//                    System.out.println("Ho ricevuto un messaggio da rabbitmq");
+//                    OtpInputStream mess = new OtpInputStream(body);
+//                    try {
+//                        pid.set(mess.read_pid());
+//                    } catch (OtpErlangDecodeException e) {
+//                        e.printStackTrace();
+//                    }
+//                    System.out.println("Primary pid: " + pid.toString());
+//                    channel.basicNack(envelope.getDeliveryTag(), false, true);
+//                    channel.basicCancel(consumerTag);
+//                }
+//            });
+//        } catch (IOException | TimeoutException e) {
+//            e.printStackTrace();
+//        }
+
+
+            OtpErlangPid pid = null;
+            try (Channel channel = connection.createChannel();) {
+                GetResponse response = null;
+                while (response == null) {
+                    // get message from "primary_queue" without sending ann ACK back
+                    // This will result with the message not being cancelled from the queue -> other web-server
+                    // may need the same message
+
+                    response = channel.basicGet("primary_queue", false);
+                }
+                // Tells Rabbitmq to requeue the same message, many webserver may need info on the primary
+                channel.basicNack(response.getEnvelope().getDeliveryTag(), false, true);
+
+                OtpInputStream mess = new OtpInputStream(response.getBody());
+                pid = mess.read_pid();
+                System.out.println("Primary pid: " + pid.toString());
+            } catch (IOException | OtpErlangDecodeException | TimeoutException e) {
+                e.printStackTrace();
             }
-            OtpInputStream mess = new OtpInputStream(response.getBody());
-            pid = mess.read_pid();
-            System.out.println("Primary pid: " + pid.toString());
-        } catch (IOException | OtpErlangDecodeException e) {
-            e.printStackTrace();
-        }
-        return pid;
+            return pid;
     }
 }

@@ -2,7 +2,7 @@
 
 
 %% API
--export([start/0, init/2, start_localhost/0]).
+-export([start/0, start_multiple_nodes/0, init/2, start_localhost/0]).
 -import(listener_module, [listener_loop/4]).
 
 -include_lib("amqp_client/include/amqp_client.hrl").
@@ -13,9 +13,15 @@ start_localhost() ->
 
 %This is a testing method to try multiple processes
 start() ->
-     io:format("Starting~n"),
+     io:format("Starting single node~n"),
      PID_primary = spawn('erlang-server@172.18.0.162', start_module, init, [[], primary]).
      %PID_secondary = spawn('erlang-server@172.18.0.163', start_module, init, [[PID_primary], secondary]).
+
+start_multiple_nodes() ->
+     io:format("Starting multiple nodes~n"),
+     PID_primary = spawn('erlang-server@172.18.0.162', start_module, init, [[], primary]),
+     PID_secondary = spawn('erlang-server@172.18.0.163', start_module, init, [[PID_primary], secondary]).
+
 
 %Stating node -
 % Primary: will also connect to RabbitMQ

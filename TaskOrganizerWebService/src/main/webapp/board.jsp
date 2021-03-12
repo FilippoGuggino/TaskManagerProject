@@ -1,7 +1,8 @@
 <%@ page import="java.util.ArrayList" %>
 <%@ page import="taskorganizer.webservice.TaskOrganizerWebService.Task" %>
 <%@ page import="java.util.Date" %>
-<%@ page import="java.text.SimpleDateFormat" %><%--
+<%@ page import="java.text.SimpleDateFormat" %>
+<%@ page import="taskorganizer.webservice.TaskOrganizerWebService.MessageManager" %><%--
   Created by IntelliJ IDEA.
   User: Leonardo
   Date: 10/02/2021
@@ -17,7 +18,7 @@
     <script src="javascript/interface.js"></script>
     <script>
         function updateBoardManager() {
-            var serverSocket = new WebSocket("ws://localhost:8080/TaskOrganizerWebService_war/websocketendpoint");
+            <% out.print("var serverSocket = new WebSocket(\"ws://" + MessageManager.ip + ":8080/TaskOrganizerWebService-1.0-SNAPSHOT/websocketendpoint\");"); %>
             var selectedBoard = findGetParameter("selectBoard");
 
 
@@ -56,7 +57,7 @@
     </script>
 </head>
 <body onload="updateBoardManager();">
-
+<% out.print("<p>Connected to " + MessageManager.ip + "</p>"); %>
 <h1 id="title_1">Task</h1>
 <h1 id="title_2"> Organizer</h1>
 
@@ -228,6 +229,10 @@
         <div id="move-menu">
             <form id="move-form" action="MoveServlet">
                 <h2>Move a task</h2>
+
+                <%
+                    out.println("<input type=\"hidden\" name=\"selectBoard\" value=\""+session.getAttribute("currentBoard")+"\">");
+                %>
 
                 <label for="task-name-move">Task name</label>
                 <input type="text" placeholder="Enter task name" name="task-name-move" id="task-name-move" required>

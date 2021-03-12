@@ -39,7 +39,7 @@ public class CreateServlet extends HttpServlet {
             e.printStackTrace();
         }
 
-        response.sendRedirect("/TaskOrganizerWebService_war/Board?selectBoard="+boardTitle);
+        response.sendRedirect("/TaskOrganizerWebService-1.0-SNAPSHOT/Board?selectBoard="+boardTitle);
     }
 
     @Override
