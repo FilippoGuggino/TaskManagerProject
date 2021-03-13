@@ -2,7 +2,7 @@
 
 %% API
 -export([check_host_recovery_registered/1,insert_host_recovery/2,create_board_db/1,create_task_db/1, load_boards_db/0,
-  load_tasks_db/1, update_task_db/1, load_boards_recovery/1, load_tasks_recovery/1, delete_host_from_recovery/1, create_task_recovery/1]).
+  load_tasks_db/1, update_task_db/1, load_boards_recovery/1, load_tasks_recovery/1, delete_host_from_recovery/1, create_task_recovery/1, load_last_opid/0]).
 
 
 
@@ -160,3 +160,23 @@ create_task_recovery(Params)->
                                [element(1, Params)]}
                     ]),
    odbc:disconnect(Ref_to_db).
+
+
+load_last_opid() ->
+  odbc:start(),
+  {ok,Ref_to_db} = odbc:connect("dsn=test_;server=localhost;database=TaskOrganizer;user=root;", []),
+  {selected, _, Opid} = odbc:sql_query(Ref_to_db, "select max(operation_id)
+                             from (select operation_id
+                                   from boards
+                                   union all
+                                   select operation_id
+                                   from tasks) AS Optable "),
+  if
+    Opid == null ->
+      Up_opid = 0 ;
+    true ->
+      %Opid format [{Number}]
+      Up_opid = element(1,lists:nth(1,Opid))
+  end,
+  Up_opid.
+

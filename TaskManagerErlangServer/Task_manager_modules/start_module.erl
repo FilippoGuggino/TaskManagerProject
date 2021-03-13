@@ -37,7 +37,7 @@ init(List_of_hosts, Server_type) ->
                io:format("~p: sono il primario~n", [self()]),
                reset_rabbitmq(),
                init_rabbitmq(),
-               listener_loop([[]], primary, false, true, 0);
+               listener_loop([[]], primary, false, true, query_module:load_last_opid());
                % This host is a Secondary
           secondary ->
                io:format("~p: sono un secondario~n", [self()]),

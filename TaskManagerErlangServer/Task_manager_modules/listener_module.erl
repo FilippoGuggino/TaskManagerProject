@@ -1,3 +1,6 @@
+% todo: broadcast message in case of failure (register failure in secondary)
+% todo: broadcast message in case of new server up (unregister secondary on failure)
+
 -module(listener_module).
 
 -import(lists, [delete/2]).
