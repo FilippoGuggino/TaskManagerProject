@@ -163,7 +163,6 @@ create_task_recovery(Params)->
 
 
 load_last_opid() ->
-  odbc:start(),
   {ok,Ref_to_db} = odbc:connect("dsn=test_;server=localhost;database=TaskOrganizer;user=root;", []),
   {selected, _, Opid} = odbc:sql_query(Ref_to_db, "select max(operation_id)
                              from (select operation_id
@@ -178,5 +177,6 @@ load_last_opid() ->
       %Opid format [{Number}]
       Up_opid = element(1,lists:nth(1,Opid))
   end,
+  odbc:disconnect(Ref_to_db),
   Up_opid.
 

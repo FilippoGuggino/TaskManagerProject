@@ -4,7 +4,7 @@
 -module(listener_module).
 
 -import(lists, [delete/2]).
--import(query_module, [create_task_recovery/1, check_host_recovery_regisered/1, insert_host_recovery/2, create_board_db/1, create_task_db/1, load_boards_db/0, load_tasks_db/1, update_task_db/1]).
+-import(query_module, [create_task_recovery/1, check_host_recovery_regisered/1, insert_host_recovery/2, create_board_db/1, create_task_db/1, load_boards_db/0, load_tasks_db/1, update_task_db/1, delete_host_from_recovery/1]).
 -import(election_module, [election_handler/1]).
 -import(recover_node_module, [host_register_recovery/2, recovery_routine/2]).
 -import(utility_module, [isolate_element/2, delete_hosts_from_list/2, get_timestamp_a/0]).
@@ -172,10 +172,10 @@ listener_loop([List_of_hosts], Server_type, Sent_heartbeat, Election_ready, Oper
                          io:format("Listener_loop: Host delete request recived~n"),
                          %The params are in the format {[List_of_hosts_no_reponse], Params_query}
                          host_register_recovery(element(1,Params), element(2,Params)),
-                         Updated_list_of_hosts = delete_hosts_from_list(List_of_hosts, Params),
+                         Updated_list_of_hosts = List_of_hosts -- element(1,Params),
                          if
                               Primary_info == primary ->
-                                   message_sending_module:send_broadcast(hosts_to_delete, {List_of_hosts, Params},  Updated_list_of_hosts,  Updated_list_of_hosts);
+                                   message_sending_module:send_broadcast(hosts_to_delete, Params,  Updated_list_of_hosts,  Updated_list_of_hosts);
                               true ->
                                    ok
                          end,
@@ -188,7 +188,7 @@ listener_loop([List_of_hosts], Server_type, Sent_heartbeat, Election_ready, Oper
                          How_many_hosts = Updated_list_of_hosts -- List_of_hosts,
                          if
                               length(How_many_hosts) == 1 ->
-                                   delete_hosts_from_list(lists:nth(1,How_many_hosts));
+                                   delete_host_from_recovery(lists:nth(1,How_many_hosts));
                               true ->
                                    ok
                          end;
