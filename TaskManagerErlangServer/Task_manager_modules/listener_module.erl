@@ -1,15 +1,34 @@
+% todo: broadcast message in case of failure (register failure in secondary)
+% todo: broadcast message in case of new server up (unregister secondary on failure)
+
 -module(listener_module).
 
 -import(lists, [delete/2]).
--import(query_module, [create_task_recovery/1, check_host_recovery_regisered/1, insert_host_recovery/2, create_board_db/1, create_task_db/1, load_boards_db/0, load_tasks_db/1, update_task_db/1]).
+-import(query_module, [create_task_recovery/1, check_host_recovery_regisered/1, insert_host_recovery/2, create_board_db/1, create_task_db/1, load_boards_db/0, load_tasks_db/1, update_task_db/1, delete_host_from_recovery/1]).
 -import(election_module, [election_handler/1]).
 -import(recover_node_module, [host_register_recovery/2, recovery_routine/2]).
 -import(utility_module, [isolate_element/2, delete_hosts_from_list/2, get_timestamp_a/0]).
 -import(message_sending_module, [server_up_message/2, send_and_wait/4, send_ack_to_primary/3, send_data_to_client/2]).
 %% API
--export([listener_loop/4, receive_acks/2, db_manager_loop/6]).
+-export([listener_loop/5, receive_acks/2, db_manager_loop/7]).
 
 -include_lib("amqp_client/include/amqp_client.hrl").
+
+
+update_operation_id(Operation, Params, Primary_info, Operation_id) ->
+     if
+          ((Primary_info == primary) and ((Operation == create_board) or (Operation == create_task) or (Operation == update_task))) ->
+               Update_operation_id = Operation_id + 1;
+          ((Primary_info == secondary) and ((Operation == create_board) or (Operation == create_task) or (Operation == update_task))) ->
+               Update_operation_id = element(1, Params);
+          true ->
+               Update_operation_id = Operation_id
+     end,
+     %io:format("Sono qui ahahahahahhahhahhahahahah ~n"),
+     %io:format(Update_operation_id),
+     Update_operation_id.
+
+
 % The listener_loop is a generic listener
 
 % List_of_hosts contains all hosts' PIDs (NOTE: the primary does not save its own PID in order
@@ -18,18 +37,21 @@
 % Every time a message is received in the specified format
 % A process db_manager_loop is spawned
 % Election_reay: false = an election is already being performed, true = otherwise
-listener_loop([List_of_hosts], Server_type, Sent_heartbeat, Election_ready) ->
+listener_loop([List_of_hosts], Server_type, Sent_heartbeat, Election_ready, Operation_id) ->
      io:format("~p: List of hosts inside the cluster: ~p~n", [self(), List_of_hosts]),
      receive
           {test, From} ->
+               Updated_operation_id = Operation_id,
                io:format("received test message!"),
                New_server_type = Server_type,
                Updated_list_of_hosts = List_of_hosts,
                New_sent_heartbeat = false,
                New_election_ready = Election_ready,
+
                From ! {ack_test, ["ciao", "bel", "bambino"], self()};
           
           {election_vote, From} ->
+               Updated_operation_id = Operation_id,
                From ! {ack_election_vote, self()},
                New_server_type = Server_type,
                % This case is used in order to NOT start multiple election procedures if multiple election_votes are received
@@ -41,12 +63,14 @@ listener_loop([List_of_hosts], Server_type, Sent_heartbeat, Election_ready) ->
                Updated_list_of_hosts = List_of_hosts,
                New_election_ready = Election_ready;
           {ack_election_vote, From} ->
+               Updated_operation_id = Operation_id,
                io:format("~p: Received ack_election_vote from ~p, my job is done. Waiting for election_victory...~n", [self(), From]),
                New_server_type = Server_type,
                New_sent_heartbeat = false,
                Updated_list_of_hosts = List_of_hosts,
                New_election_ready = Election_ready;
           {election_victory, Received_list_of_hosts, New_server_type, From} ->
+               Updated_operation_id = Operation_id,
                io:format("~p: Server pid: ~p has been elected as the primary~n", [self(), From]),
                case New_server_type of
                     primary ->
@@ -82,6 +106,7 @@ listener_loop([List_of_hosts], Server_type, Sent_heartbeat, Election_ready) ->
                New_election_ready = true;
      % TODO think about synchronization issues
           {heartbeat, From} ->
+               Updated_operation_id = Operation_id,
                io:format("~p: Reply with 'i_am_alive' to: ~p~n", [self(), From]),
                New_server_type = Server_type,
                From ! i_am_alive,
@@ -91,6 +116,7 @@ listener_loop([List_of_hosts], Server_type, Sent_heartbeat, Election_ready) ->
 
      %Routine to add a new host in the chain of hosts
           {new_server_up, From} ->
+               Updated_operation_id = Operation_id,
                io:format("~p: New server joined, its PID is: ~p ~n", [self(), From]),
                New_sent_heartbeat = false,
                New_server_type = Server_type,
@@ -102,11 +128,12 @@ listener_loop([List_of_hosts], Server_type, Sent_heartbeat, Election_ready) ->
                %Send to all the other servers active the new host that joined
                server_up_message(Updated_list_of_hosts, List_of_hosts),
                %Recovery Host routine - send it all the data
-               recovery_routine(From, List_of_hosts),
+               recovery_routine(From, Operation_id),
                New_election_ready = Election_ready;
      % update_new_server_state(From);
      % TODO update new server database state
           i_am_alive ->
+               Updated_operation_id = Operation_id,
                io:format("~p: Received i_am_alive from primary~n", [self()]),
                New_server_type = Server_type,
                Updated_list_of_hosts = List_of_hosts,
@@ -116,41 +143,72 @@ listener_loop([List_of_hosts], Server_type, Sent_heartbeat, Election_ready) ->
      % The reason why it's killed through a message instead of an exit inside the heartbeat_handler is to
      % let the process finish whatever query it had already started
           quit ->
+               Updated_operation_id = Operation_id,
                New_server_type = Server_type,
                Updated_list_of_hosts = List_of_hosts,
                New_sent_heartbeat = false,
                New_election_ready = Election_ready,
                exit(electing_new_primary);
 
-     % ------------- REQUEST SERVICE MESSAGE -----------------
+
+
+     % ------------------------ REQUEST SERVICE MESSAGE ---------------------------------------------
+          {operation_id, OpID} ->
+          	    New_sent_heartbeat = false,
+               New_server_type = Server_type,
+               New_election_ready = Election_ready,
+               Updated_list_of_hosts = List_of_hosts,
+               Updated_operation_id = OpID;
+
           {Operation, Params, Primary_info, From} ->
                io:format("~p: Received ~p operation from ~p~n", [self(), Operation, From]),
                New_sent_heartbeat = false,
                New_server_type = Server_type,
                New_election_ready = Election_ready,
+
                case Operation of
                     hosts_to_delete ->
+                    	   Updated_operation_id = Operation_id,
                          io:format("Listener_loop: Host delete request recived~n"),
-                         %io:format(List_of_hosts),
-                         Updated_list_of_hosts = delete_hosts_from_list(List_of_hosts, Params),
+                         %The params are in the format {[List_of_hosts_no_reponse], Params_query}
+                         host_register_recovery(element(1,Params), element(2,Params)),
+                         Updated_list_of_hosts = List_of_hosts -- element(1,Params),
+                         if
+                              Primary_info == primary ->
+                                   message_sending_module:send_broadcast(hosts_to_delete, Params,  Updated_list_of_hosts,  Updated_list_of_hosts);
+                              true ->
+                                   ok
+                         end,
+
                          io:format("Updated list ~n");
-                         %io:format(Updated_list_of_hosts);
                     update_list ->
+                    	 Updated_operation_id = Operation_id,
                          io:format("~p: Updating list of hosts: ~p ~n", [self(), [From] ++ Params]),
-                         Updated_list_of_hosts = [From] ++ Params;
-                    _ ->
-                         Updated_list_of_hosts = List_of_hosts,
-                         %take care of the request if not an host update
-                         spawn(?MODULE, db_manager_loop, [From, Operation, Params, Primary_info, List_of_hosts, self()])
+                         Updated_list_of_hosts = [From] ++ Params,
+                         How_many_hosts = Updated_list_of_hosts -- List_of_hosts,
+                         if
+                              length(How_many_hosts) == 1 ->
+                                   delete_host_from_recovery(lists:nth(1,How_many_hosts));
+                              true ->
+                                   ok
+                         end;
+
+               _ ->
+                    	   Updated_list_of_hosts = List_of_hosts,
+                         Updated_operation_id = update_operation_id(Operation,Params, Primary_info, Operation_id),
+                         spawn(?MODULE, db_manager_loop, [From, Operation, Params, Primary_info, List_of_hosts, self(), Updated_operation_id])
                end;
           _ ->
+               Updated_operation_id = Operation_id,
                io:format("~p: received undefined message ~n", [self()]),
                New_server_type = Server_type,
                Updated_list_of_hosts = List_of_hosts,
                New_sent_heartbeat = false,
                New_election_ready = Election_ready,
                exit(undefined_message)
+     % ----------------------------------------------------------------------------------------------------------------------------------------------------
      after 3000 ->
+          Updated_operation_id = Operation_id,
           case Election_ready of
                false ->
                     New_server_type = Server_type,
@@ -191,7 +249,7 @@ listener_loop([List_of_hosts], Server_type, Sent_heartbeat, Election_ready) ->
                     end
           end
      end,
-     listener_loop([Updated_list_of_hosts], New_server_type, New_sent_heartbeat, New_election_ready).
+     listener_loop([Updated_list_of_hosts], New_server_type, New_sent_heartbeat, New_election_ready, Updated_operation_id).
 
 
 create_multiple_boards([],[]) ->
@@ -240,11 +298,11 @@ broadcast_or_ack(From, Operation, Params, Primary_info, List_of_hosts, Listener_
 %   + Send the data to other hosts and waits their ACK
 %    If it is a secondary
 %   + Send and ack to the primary
-db_manager_loop(From, Operation, Param, Primary_info, List_of_hosts, Listener_process_id) ->
+db_manager_loop(From, Operation, Param, Primary_info, List_of_hosts, Listener_process_id, Operation_id) ->
      if
      %The primary must select the timestamp to be stored in the db
           Primary_info == primary ->
-               Params = erlang:insert_element(1, Param, integer_to_list(get_timestamp_a()));
+               Params = erlang:insert_element(1, Param, Operation_id);
           true ->
                Params = Param
      end,
@@ -275,46 +333,9 @@ db_manager_loop(From, Operation, Param, Primary_info, List_of_hosts, Listener_pr
                broadcast_or_ack(From, Operation, Params, Primary_info, List_of_hosts, Listener_process_id);
 
           create_tasks ->
-               %odbc:start(),
-               %{ok,Ref_to_db} = odbc:connect("dsn=test_;server=localhost;database=TaskOrganizer;user=root;", []),
-               %{ok, Ref_to_db} = odbc:connect("dsn=test_;server=localhost;database=TaskOrganizer;user=root;", []),
-               %{update, _} = odbc:param_query(Ref_to_db, "UPDATE tasks SET stage_id=?, last_update_time=? WHERE task_id=?",
-               %     [{sql_integer,
-               %          isolate_element(Params, 4)},
-               %          {{sql_varchar, 255},
-               %               isolate_element(Params, 5)},
-               %          {sql_integer,
-               %               isolate_element(Params, 1)}
-               %     ]),
-               %io:format("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA~n"),
-               %Params2 = [{100,"RECVOERY QUERY","2020-01-01",4,"111"}, {121,"XXX","2020-01-01",4,"ZZZ"}],
-               %io:format("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXx ~p ~n", [isolate_element(Params2,1)]),
-               %Params2 = Params,
                create_multilpe_tasks(Params),
-               %{updated, _} = odbc:param_query(Ref_to_db, "INSERT INTO tasks (task_id, task_description, expiration_date, stage_id, last_update_time) VALUES (?, ?, ?, ?, ?)",
-               %     [{sql_integer,
-               %          isolate_element(Params2, 1)},
-               %          {{sql_varchar, 255},
-               %               isolate_element(Params2, 2)},
-               %          {{sql_varchar, 20},
-               %               isolate_element(Params2, 3)},
-               %          {sql_integer,
-               %               isolate_element(Params2, 4)},
-               %          {{sql_varchar, 255},
-               %               isolate_element(Params2, 5)}
-               %     ]),
-               %io:format("SYNC: create_tasks query ok~n"),
-               %odbc:param_query(Ref_to_db, "UPDATE tasks SET stage_id=?, last_update_time=? WHERE task_id=?",
-               %     [{sql_integer,
-               %          isolate_element(Params, 4)},
-               %          {{sql_varchar, 255},
-               %               isolate_element(Params, 5)},
-               %          {sql_integer,
-               %               isolate_element(Params, 1)}
-               %     ]),
                io:format("SYNC: create_tasks query ok~n"),
                broadcast_or_ack(From, Operation, Params, Primary_info, List_of_hosts, Listener_process_id);
-               %odbc:disconnect(Ref_to_db);
 
           update_task ->
                io:format("~p: Received update_task ~n", [self()]),
@@ -363,8 +384,9 @@ receive_acks(Params, List_of_hosts) ->
                end
      after 10000 ->
           io:format("Entered host recovery routine ~n"),
-          host_register_recovery(List_of_hosts, Params),
-          whereis(listener_loop_process) ! {hosts_to_delete, List_of_hosts, primary, self()},
+          io:format("~p: FORRRRRRRRR  RRRR RRRR =~p ~n", [self(), Params]),
+          %host_register_recovery(List_of_hosts, Params),
+          whereis(listener_loop_process) ! {hosts_to_delete, {List_of_hosts, Params}, primary, self()},
           %SEND the response to client after recovery data are stored
           receive_acks(Params, [])
      end.

@@ -50,7 +50,10 @@ server_up_message([Updated_list_of_hosts], [Host | T]) ->
 getFirst([H|_]) ->
   H.
 
-recovery_routine(Process_id, List_of_hosts) ->
+%routine called by the primary in case a new/recovered host is up
+% send the needed data to restore DB of the host
+% send the Operation_id updated
+recovery_routine(Process_id, Operation_id) ->
   io:format("PRIMARY: starting recovery routine for secondary~n"),
   %Process_id ! {ack_new_server_up, List_of_hosts, self()},
   Data_query = check_host_recovery_registered(Process_id),
@@ -60,12 +63,12 @@ recovery_routine(Process_id, List_of_hosts) ->
   if
     Data_query == [] ->
       %    io:format("------------ HOST FOUND: This host is in the recovery mode ~n"),
-      Time = "0";
+      Time = 0;
     true ->
       Data = getFirst(Data_query),
       io:format("------------ HOST FOUND: This host is in the recovery mode ~n"),
-      Time = element(1,Data),
-      io:format(Time)
+      Time = element(1,Data)
+      %io:format(Time)
   end,
   %Time = "0",
   %GET BOARD AND SEND BOARDS
@@ -77,14 +80,6 @@ recovery_routine(Process_id, List_of_hosts) ->
       send_and_wait(create_boards, Boards, [Process_id], [Process_id])
   end,
 
-
-  %GET STAGES AND SEND STAGES
-  %Stages = get_stages_db(Time),
-  %SENDING ALL THE STAGES
-  %send_and_wait(create_stages, Stages, [Process_id], [Process_id]),
-
-  %GET TASKS AND SEND TASKS
-  %utility_module:isolate_element(Time,1)
   Tasks = load_tasks_recovery(Time),
   %SENDING ALL THE TASKS
   if
@@ -93,5 +88,7 @@ recovery_routine(Process_id, List_of_hosts) ->
       send_and_wait(create_tasks, Tasks, [Process_id], [Process_id])
   end,
 
+  Process_id ! {operation_id, Operation_id},
+  %send_and_wait(operation_id, Operation_id, [Process_id], [Process_id]),
   %DELETE THE HOST FROM THE RECOVERY TABLE. (Only if all Data are OK)
   delete_host_from_recovery(Process_id).
