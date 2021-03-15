@@ -34,7 +34,7 @@ public class CreateServlet extends HttpServlet {
         String boardTitle = request.getParameter("selectBoard");
 
         try {
-            MessageManager.createTask(task, "Magicboard");
+            MessageManager.createTask(task, boardTitle);
         } catch (Exception e) {
             e.printStackTrace();
         }

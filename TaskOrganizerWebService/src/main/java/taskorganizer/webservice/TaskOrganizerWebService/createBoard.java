@@ -20,6 +20,6 @@ public class createBoard extends HttpServlet {
 
 //        HttpSession session = request.getSession(true);
 //        session.setAttribute("currentBoard",boardName);
-        response.sendRedirect("/TaskOrganizerWebService_war/Board?selectBoard="+boardName);
+        response.sendRedirect("/TaskOrganizerWebService-1.0-SNAPSHOT/Board?selectBoard="+boardName);
     }
 }
