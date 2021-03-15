@@ -10,7 +10,7 @@
 -author("Riccardo").
 
 %% API
--export([send_data_to_client/2, send_generic_message_to_list_of_hosts/2, send_ack_to_primary/3,send_update_to_clients/1, send_and_wait/4, server_up_message/2]).
+-export([send_data_to_client/2, send_generic_message_to_list_of_hosts/2, send_ack_to_primary/3,send_update_to_clients/1, send_and_wait/4, server_up_message/2, send_broadcast/4]).
 -import(listener_module,[receive_acks/2]).
 % Retrieve all RabbitMQ records
 %-include_lib("amqp_client/include/amqp_client.hrl").
@@ -48,6 +48,13 @@ send_update_to_clients(Params) ->
   %% Close the connection
   %amqp_connection:close(Connection).
 
+send_broadcast(_, Params, List_of_hosts, []) ->
+  io:format("All data have been sent - Wait for acks~n");
+send_broadcast(Operation, Params, List_of_hosts, [H | T]) ->
+  io:format("Send data to secondary~n"),
+  io:format("cosoidas: ~p~n", [{Operation, Params, secondary, self()}]),
+  H ! {Operation, Params, secondary, self()},
+  send_broadcast(Operation, Params, List_of_hosts, T).
 
 send_and_wait(_, Params, List_of_hosts, []) ->
   io:format("All data have been sent - Wait for acks~n"),

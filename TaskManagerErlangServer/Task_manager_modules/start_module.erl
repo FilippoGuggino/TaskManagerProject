@@ -3,7 +3,7 @@
 
 %% API
 -export([start/0, start_multiple_nodes/0, init/2, start_localhost/0]).
--import(listener_module, [listener_loop/4]).
+-import(listener_module, [listener_loop/5]).
 
 -include_lib("amqp_client/include/amqp_client.hrl").
 
@@ -13,7 +13,7 @@ start_localhost() ->
 
 %This is a testing method to try multiple processes
 start() ->
-     io:format("Starting single node~n"),
+     io:format("Starting~n"),
      PID_primary = spawn('erlang-server@172.18.0.162', start_module, init, [[], primary]).
      %PID_secondary = spawn('erlang-server@172.18.0.163', start_module, init, [[PID_primary], secondary]).
 
@@ -36,7 +36,7 @@ init(List_of_hosts, Server_type) ->
                io:format("~p: sono il primario~n", [self()]),
                reset_rabbitmq(),
                init_rabbitmq(),
-               listener_loop([[]], primary, false, true);
+               listener_loop([[]], primary, false, true, query_module:load_last_opid());
                % This host is a Secondary
           secondary ->
                io:format("~p: sono un secondario~n", [self()]),
@@ -47,7 +47,7 @@ init(List_of_hosts, Server_type) ->
                     {ack_new_server_up, Updated_list_of_hosts, From} ->
                          io:format("~p: received updated list of hosts: ~p ~n", [self(), Updated_list_of_hosts]),
                          Complete_list_of_hosts = [From | Updated_list_of_hosts],
-                         listener_loop([Complete_list_of_hosts], secondary, false, true);
+                         listener_loop([Complete_list_of_hosts], secondary, false, true, 0);
                     _ ->
                          io:format("undefined message."),
                          exit(undefined_message)
