@@ -20,6 +20,7 @@ start() ->
 start_multiple_nodes() ->
      io:format("Starting multiple nodes~n"),
      PID_primary = spawn('erlang-server@172.18.0.162', start_module, init, [[], primary]),
+     timer:sleep(1000),
      PID_secondary = spawn('erlang-server@172.18.0.163', start_module, init, [[PID_primary], secondary]).
 
 

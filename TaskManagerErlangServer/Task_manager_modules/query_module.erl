@@ -171,7 +171,7 @@ load_last_opid() ->
                                    select operation_id
                                    from tasks) AS Optable "),
   if
-    Opid == null ->
+    Opid == [{null}] ->
       Up_opid = 0 ;
     true ->
       %Opid format [{Number}]
