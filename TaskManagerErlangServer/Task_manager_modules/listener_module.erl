@@ -238,6 +238,10 @@ listener_loop([List_of_hosts], Server_type, Sent_heartbeat, Election_ready, Oper
                               New_sent_heartbeat = false,
                               Updated_list_of_hosts = List_of_hosts,
                               New_election_ready = false,
+
+                              %Store when the primary failed
+                              insert_host_recovery(PID_primary, {Operation_id}),
+
                               election_handler([List_of_hosts]);
 
                          %PID_primary ! {heartbeat, self()};
@@ -291,6 +295,34 @@ broadcast_or_ack(From, Operation, Params, Primary_info, List_of_hosts, Listener_
                send_ack_to_primary(From, Params, Listener_process_id)
      end.
 
+broadcast(Operation, Params, Primary_info, List_of_hosts)->
+     case Primary_info of
+          primary ->
+               io:format("~p: Primary broadcasting the message", [self()]),
+               send_and_wait(Operation, Params, List_of_hosts, List_of_hosts);
+          _ ->
+               ok
+     end.
+
+ack(From, Operation, Params, Primary_info, Listener_process_id) ->
+     case Primary_info of
+          primary ->
+               io:format("~p: Sending ack to rabbitMQ and Client~n", [self()]),
+               case Operation of
+                    create_task ->
+                         From! {ack_create_task, Params},
+                         utility_module:send_update_to_rabbitmq(ack_create_task, Params, element(2, Params));
+                    update_task ->
+                         From! {ack_update_task, Params},
+                         utility_module:send_update_to_rabbitmq(ack_update_task, Params, element(2, Params));
+                    _ ->
+                         From! {ack_create_board, Params}
+               end;
+          secondary ->
+               io:format("~p: Sending ack to primary~n", [self()]),
+               send_ack_to_primary(From, Params, Listener_process_id)
+     end.
+
 % The db_manager_loop
 % 1- create a connection to MySQL database
 % 2- Execute the query
@@ -312,35 +344,41 @@ db_manager_loop(From, Operation, Param, Primary_info, List_of_hosts, Listener_pr
      %GET CURRENT TIMESTAMP TO PASS ALL THE OTHER HOSTS
      case Operation of
           create_board ->
-               io:format("ho chiamato create_board~n"),
+               broadcast(Operation, Params, Primary_info, List_of_hosts),
                create_board_db(Params),
-               broadcast_or_ack(From, Operation, Params, Primary_info, List_of_hosts, Listener_process_id);
+               ack(From, Operation, Params, Primary_info, Listener_process_id);
 
           %MULTIPLE BOARDS UPDATE
           create_boards ->
                io:format("ho chiamato create_boards~n"),
                List_of_boards_title = isolate_element(Params, 1),
                List_of_last_update_time = isolate_element(Params, 2),
+
+               broadcast(Operation, Params, Primary_info, List_of_hosts),
                create_multiple_boards(List_of_boards_title, List_of_last_update_time),
-               broadcast_or_ack(From, Operation, Params, Primary_info, List_of_hosts, Listener_process_id),
+               ack(From, Operation, Params, Primary_info, Listener_process_id),
+
                io:format("create_board query ok~n"),
                io:format("SYNC: create_boards query ok~n");
 
 
           create_task ->
                io:format("~p: Received create_task ~n", [self()]),
+               broadcast(Operation, Params, Primary_info, List_of_hosts),
                create_task_db(Params),
-               broadcast_or_ack(From, Operation, Params, Primary_info, List_of_hosts, Listener_process_id);
+               ack(From, Operation, Params, Primary_info, Listener_process_id);
 
           create_tasks ->
+               broadcast(Operation, Params, Primary_info, List_of_hosts),
                create_multilpe_tasks(Params),
                io:format("SYNC: create_tasks query ok~n"),
-               broadcast_or_ack(From, Operation, Params, Primary_info, List_of_hosts, Listener_process_id);
+               ack(From, Operation, Params, Primary_info, Listener_process_id);
 
           update_task ->
                io:format("~p: Received update_task ~n", [self()]),
+               broadcast(Operation, Params, Primary_info, List_of_hosts),
                update_task_db(Params),
-               broadcast_or_ack(From, Operation, Params, Primary_info, List_of_hosts, Listener_process_id);
+               ack(From, Operation, Params, Primary_info, Listener_process_id);
                % TODO send 'ack_update_task' back + send same ack message to rabbitmq
 
 

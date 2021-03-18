@@ -28,9 +28,12 @@ insert_host_recovery(Host_pid, Params) ->
 create_board_db(Params) ->
   {ok,Ref_to_db} = odbc:connect("dsn=test_;server=localhost;database=TaskOrganizer;user=root;", []),
   %CREATE BOARDS
-  odbc:param_query(Ref_to_db, "INSERT INTO boards (board_title, operation_id) VALUES (?,?)",
+  {updated, _} = odbc:param_query(Ref_to_db, "INSERT INTO boards (board_title, operation_id) VALUES (?,?)
+                               ON DUPLICATE KEY UPDATE operation_id = ? ",
     [{{sql_varchar, 255},
       [element(2, Params)]},
+      {sql_integer,
+        [element(1, Params)]},
       {sql_integer,
         [element(1, Params)]}
     ]),
@@ -43,7 +46,8 @@ create_task_db(Params)->
   {ok,Ref_to_db} = odbc:connect("dsn=test_;server=localhost;database=TaskOrganizer;user=root;", []),
   odbc:param_query(Ref_to_db, "INSERT INTO tasks (board_title, task_description, expiration_date,
                                                 stage_id, task_title, author,  type, operation_id)
-                                VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                                ON DUPLICATE KEY UPDATE operation_id=?",
     [{{sql_varchar, 255},
         [element(2, Params)]},
       {{sql_varchar, 255},
@@ -58,6 +62,8 @@ create_task_db(Params)->
         [element(7, Params)]},
       {{sql_varchar, 255},
         [element(8, Params)]},
+      {sql_integer,
+        [element(1, Params)]},
       {sql_integer,
         [element(1, Params)]}
     ]),
@@ -180,3 +186,14 @@ load_last_opid() ->
   odbc:disconnect(Ref_to_db),
   Up_opid.
 
+delete_data_from_opid(Opid) ->
+  {ok,Ref_to_db} = odbc:connect("dsn=test_;server=localhost;database=TaskOrganizer;user=root;", []),
+  odbc:param_query(Ref_to_db, "DELETE FROM boards WHERE operation_id>?",
+    [{sql_integer,
+      [Opid]}
+    ]),
+  odbc:param_query(Ref_to_db, "DELETE FROM tasks WHERE operation_id>?",
+    [{sql_integer,
+      [Opid]}
+    ]),
+  odbc:disconnect(Ref_to_db).
