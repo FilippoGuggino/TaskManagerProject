@@ -420,7 +420,7 @@ receive_acks(Params, List_of_hosts) ->
                     %Call untill no host is in the list
                     receive_acks(Params, Remaining_list_of_hosts)
                end
-     after 10000 ->
+     after 1000 ->
           io:format("Entered host recovery routine ~n"),
           io:format("~p: FORRRRRRRRR  RRRR RRRR =~p ~n", [self(), Params]),
           %host_register_recovery(List_of_hosts, Params),

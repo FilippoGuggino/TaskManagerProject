@@ -30,17 +30,17 @@ start_multiple_nodes() ->
 % Both of them will call listener loop to receive message
 init(List_of_hosts, Server_type) ->
      odbc:start(),
+     register(listener_loop_process, self()),
      case Server_type of
           % This host is the primary
           primary ->
-          	   register(listener_loop_process, self()),
                io:format("~p: sono il primario~n", [self()]),
                reset_rabbitmq(),
                init_rabbitmq(),
                listener_loop([[]], primary, false, true, query_module:load_last_opid());
                % This host is a Secondary
           secondary ->
-               io:format("~p: sono un secondario~n", [self()]),
+               io:format("~p: sono un secondario e il primario e: ~p~n", [self(), List_of_hosts]),
                % TODO send new_server_up to primary
                [PID_primary | List_without_primary] = List_of_hosts,
                PID_primary ! {new_server_up, self()},

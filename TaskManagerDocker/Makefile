@@ -30,7 +30,6 @@ test-node2:
 
 	docker exec -ti -w /TaskManagerErlangServer mysql2 erlc -I /TaskManagerErlangServer/_build/default/lib/ Task_manager_modules/start_module.erl Task_manager_modules/testing_module.erl Task_manager_modules/utility_module.erl Task_manager_modules/election_module.erl Task_manager_modules/listener_module.erl Task_manager_modules/message_sending_module.erl Task_manager_modules/query_module.erl Task_manager_modules/recover_node_module.erl
 	docker exec -dti -w /TaskManagerErlangServer mysql2 /bin/sh -c 'erl -name erlang-server@172.18.0.163 -pa _build/default/lib/*/ebin -setcookie test'
-	docker exec -dti mysql2 /bin/sh
 
 clean-rabbit:
 	docker stop rabbitmq || true
@@ -66,6 +65,8 @@ build-node1:
 	docker cp odbc.ini mysql1:/etc/odbc.ini
 	docker cp odbcinst.ini mysql1:/etc/odbcinst.ini
 	docker cp ../TaskManagerErlangServer mysql1:/
+	docker stop mysql1 || true
+	docker start mysql1 || true
 
 build-node2:
 	$(MAKE) clean-node2
@@ -78,6 +79,8 @@ build-node2:
 	docker cp odbc.ini mysql2:/etc/odbc.ini
 	docker cp odbcinst.ini mysql2:/etc/odbcinst.ini
 	docker cp ../TaskManagerErlangServer mysql2:/
+	docker stop mysql2 || true
+	docker start mysql2 || true
 
 build:
 	$(MAKE) clean

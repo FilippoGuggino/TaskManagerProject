@@ -183,6 +183,7 @@ load_last_opid() ->
       %Opid format [{Number}]
       Up_opid = element(1,lists:nth(1,Opid))
   end,
+  io:format("up_opid: ~p~n", [Up_opid]),
   odbc:disconnect(Ref_to_db),
   Up_opid.
 

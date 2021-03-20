@@ -96,6 +96,11 @@ html {
     border-radius:100px;
     width: 300px;
 }
+
+#board-name{
+    color: black;
+}
+
 select {
     padding: 5px;
     text-align: center;
