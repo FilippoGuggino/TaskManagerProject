@@ -16,7 +16,6 @@ if [ -d /app/mysql ]; then
   echo "[i] MySQL directory already present, skipping creation"
 else
   echo "[i] MySQL data directory not found, creating initial DBs"
-
   mysql_install_db --user=root > /dev/null
 
   if [ "$MYSQL_ROOT_PASSWORD" = "" ]; then
