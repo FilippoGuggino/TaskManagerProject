@@ -1,6 +1,5 @@
-% todo: broadcast message in case of failure (register failure in secondary)
-% todo: broadcast message in case of new server up (unregister secondary on failure)
-
+% When I wrote this, only God and I understood what I was doing
+% Now, God only knows
 -module(listener_module).
 
 -import(lists, [delete/2]).
@@ -254,7 +253,6 @@ listener_loop([List_of_hosts], Server_type, Sent_heartbeat, Election_ready, Oper
           end
      end,
      listener_loop([Updated_list_of_hosts], New_server_type, New_sent_heartbeat, New_election_ready, Updated_operation_id).
-
 
 create_multiple_boards([],[]) ->
      ok;
