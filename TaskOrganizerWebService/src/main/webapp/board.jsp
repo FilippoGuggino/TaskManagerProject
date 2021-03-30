@@ -205,27 +205,6 @@
             </form>
         </div>
 
-        <div id="deletion-menu">
-            <form id="deletion-form" action="DeleteServlet">
-                <h2>Delete a task</h2>
-
-                <label for="task-name-del">Task name</label>
-                <input type="text" placeholder="Enter task name" name="task-name-del" id="task-name-del" required>
-
-                <label for="task-stage-del">Select to which stage</label>
-                <select name="task-stage-del" id="task-stage-del">
-                    <option value="0">BACKLOG</option>
-                    <option value="1">DOING</option>
-                    <option value="2">QUALITY CHECK</option>
-                    <option value="3">DONE</option>
-                </select>
-
-                <br><br>
-                <input class="submit" type="submit" value="Submit">
-
-            </form>
-        </div>
-
         <div id="move-menu">
             <form id="move-form" action="MoveServlet">
                 <h2>Move a task</h2>

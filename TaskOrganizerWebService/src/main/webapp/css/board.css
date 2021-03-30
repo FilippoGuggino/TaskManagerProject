@@ -101,6 +101,7 @@ select {
 
 #backlog-stage{
     height: 700px;
+    width: 350px;
     overflow:auto;
     padding: 20px;
     display: inline-block;
@@ -113,6 +114,7 @@ select {
 }
 #doing-stage{
     height: 700px;
+    width: 350px;
     overflow:auto;
     padding: 20px;
     display: inline-block;
@@ -125,6 +127,7 @@ select {
 }
 #quality-check-stage {
     height: 700px;
+    width: 350px;
     overflow:auto;
     padding: 20px;
     display: inline-block;
@@ -137,6 +140,7 @@ select {
 }
 #done-stage {
     height: 700px;
+    width: 350px;
     overflow:auto;
     padding: 20px;
     display: inline-block;
