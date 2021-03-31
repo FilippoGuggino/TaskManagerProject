@@ -192,8 +192,8 @@ listener_loop([List_of_hosts], Server_type, Sent_heartbeat, Election_ready, Oper
                                    ok
                          end;
 
-               _ ->
-                    	   Updated_list_of_hosts = List_of_hosts,
+                    _ ->
+                         Updated_list_of_hosts = List_of_hosts,
                          Updated_operation_id = update_operation_id(Operation,Params, Primary_info, Operation_id),
                          spawn(?MODULE, db_manager_loop, [From, Operation, Params, Primary_info, List_of_hosts, self(), Updated_operation_id])
                end;

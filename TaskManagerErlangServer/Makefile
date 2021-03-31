@@ -21,6 +21,7 @@ deploy-multiple-nodes:
 	rebar3 compile
 	$(MAKE) -C ../TaskManagerDocker test-node1
 	$(MAKE) -C ../TaskManagerDocker test-node2
+	$(MAKE) -C ../TaskManagerDocker test-node3
 
 compile:
 	erlc -I /run/media/filippo/dati/workspace/Task_manager

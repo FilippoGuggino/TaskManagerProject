@@ -22,7 +22,6 @@ public class WelcomeServlet extends HttpServlet{
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 
         ArrayList<String> boards = new ArrayList<String>();
-        boards.add("ciao");
 
         boards = MessageManager.loadBoards();
 
