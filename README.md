@@ -11,7 +11,7 @@
 </ul>
 
 ## Architecture overview
-![picture](https://github.com/FilippoGuggino/TaskManagerProject/blob/master/Doc/Task_Organizer_Doc.pdf)
+![picture](https://github.com/FilippoGuggino/TaskManagerProject/blob/master/Doc/Architecture.png)
 
 <p>The full documentation is available here: (https://github.com/FilippoGuggino/TaskManagerProject/blob/master/Doc/Task_Organizer_Doc.pdf) <\p>
 
