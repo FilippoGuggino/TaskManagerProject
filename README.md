@@ -2,12 +2,12 @@
 
 ## Description of the system 
 
-<p>TaskOrganizer is a web application whose goal is to deliver a task manager system for projects.<\p>
+<p>TaskOrganizer is a web application whose goal is to deliver a task manager system for projects.
 <p>The main goals of this application are:</p> 
 <ul>
   <li> Provide a simple interface to create boards and tasks 
-  <li> Update in real time the boards of every user connected to the system
-  <li> Load balancing during the web-servers access
+  <li> Update in real-time the boards of every user connected to the system
+  <li> Balance the connections to the web servers
   <li> fault-tollerance of the data by replication of the back-end 
 </ul>
 
