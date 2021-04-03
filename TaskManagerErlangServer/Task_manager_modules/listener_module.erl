@@ -39,19 +39,9 @@ update_operation_id(Operation, Params, Primary_info, Operation_id) ->
 listener_loop([List_of_hosts], Server_type, Sent_heartbeat, Election_ready, Operation_id) ->
      io:format("~p: List of hosts inside the cluster: ~p~n", [self(), List_of_hosts]),
      receive
-          {test, From} ->
-               Updated_operation_id = Operation_id,
-               io:format("received test message!"),
-               New_server_type = Server_type,
-               Updated_list_of_hosts = List_of_hosts,
-               New_sent_heartbeat = false,
-               New_election_ready = Election_ready,
-
-               From ! {ack_test, ["ciao", "bel", "bambino"], self()};
-          
           {election_vote, From} ->
                Updated_operation_id = Operation_id,
-               From ! {ack_election_vote, self()},
+               From ! {ack, {election_vote, From}},
                New_server_type = Server_type,
                % This case is used in order to NOT start multiple election procedures if multiple election_votes are received
                case Election_ready of
@@ -68,12 +58,53 @@ listener_loop([List_of_hosts], Server_type, Sent_heartbeat, Election_ready, Oper
                New_sent_heartbeat = false,
                Updated_list_of_hosts = List_of_hosts,
                New_election_ready = Election_ready;
-          {election_victory, Received_list_of_hosts, New_server_type, From} ->
+          % due to relative speed, a server can receive an election victory even if it wasn't even aware that the primary was down
+          % in this case, the election victory message is slightly different
+          {election_victory, Received_list_of_hosts, New_server_type, From, Thread_ack_pid} ->
+               Thread_ack_pid ! {ack, {election_victory, Received_list_of_hosts, New_server_type, From}},
                Updated_operation_id = Operation_id,
                io:format("~p: Server pid: ~p has been elected as the primary~n", [self(), From]),
                case New_server_type of
                     primary ->
-                         
+                         io:format("~p: I am the new primary! ~n", [self()]),
+                         % Start connection with RabbitMQ
+                         application:ensure_started(amqp_client),
+                         {ok, Connection} = amqp_connection:start(#amqp_params_network{host = "172.18.0.160"}),
+                         {ok, Channel} = amqp_connection:open_channel(Connection),
+               
+                         % Update message inside rabbitmq indicating PID of the primary
+                         Get = #'basic.get'{queue = <<"primary_queue">>},
+                         {#'basic.get_ok'{delivery_tag = Tag}, Content} = amqp_channel:call(Channel, Get),
+                         %#amqp_msg{payload = Payload} = Content,
+                         amqp_channel:cast(Channel, #'basic.ack'{delivery_tag = Tag}),
+               
+                         Payload = term_to_binary(self()),
+               
+                         Routing_key = <<"pr imary_pid">>,
+                         Exchange_name = <<"topics_boards">>,
+                         Publish = #'basic.publish'{exchange = Exchange_name, routing_key = Routing_key},
+                         amqp_channel:cast(Channel, Publish, #amqp_msg{payload = Payload}),
+               
+                         %% Close the channel
+                         amqp_channel:close(Channel),
+               
+                         %% Close the connection
+                         amqp_connection:close(Connection),
+                         Updated_list_of_hosts = Received_list_of_hosts;
+                    _ ->
+                         Updated_list_of_hosts = [From | Received_list_of_hosts]
+               end,
+               New_sent_heartbeat = false,
+               New_election_ready = true;
+          
+          % self message sent insiede election handler
+          {election_victory, Received_list_of_hosts, New_server_type, From} ->
+               % Note: self-message doesn't need to send an ack
+               Updated_operation_id = Operation_id,
+               io:format("~p: Server pid: ~p has been elected as the primary~n", [self(), From]),
+               case New_server_type of
+                    primary ->
+                         io:format("~p: I am the new primary! ~n", [self()]),
                          % Start connection with RabbitMQ
                          application:ensure_started(amqp_client),
                          {ok, Connection} = amqp_connection:start(#amqp_params_network{host = "172.18.0.160"}),
